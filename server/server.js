@@ -4,28 +4,26 @@ require('dotenv').config();
 const path = require('path');
 const db = require('./db/db-connection.js');
 
-
 const app = express();
 const PORT = process.env.PORT || 8080;
 app.use(cors());
 app.use(express.json());
 
-// creates an endpoint for the route "/""
 app.get('/', (req, res) => {
-    res.json({ message: 'Hola, from My template ExpressJS with React-Vite' });
+    res.send("Hi! This is Dana's Express JS template");
 });
 
-// create the get request for students in the endpoint '/api/students'
-app.get('/api/students', async (req, res) => {
+// MVP
+app.get('/api/user/:user_id', cors(), async (req, res) => {
     try {
-        const { rows: students } = await db.query('SELECT * FROM students');
-        res.send(students);
+      const { rows: users } = await db.query('SELECT * FROM users WHERE user_id = $1', [req.query.user_id]);
+      res.send(users);
     } catch (e) {
-        return res.status(400).json({ e });
+      return res.status(400).json({ e });
     }
 });
 
-// create the POST request
+
 app.post('/api/students', async (req, res) => {
     try {
         const newStudent = {

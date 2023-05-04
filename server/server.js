@@ -3,8 +3,6 @@ const cors = require('cors');
 require('dotenv').config();
 const path = require('path');
 const db = require('./db/db-connection.js');
-// const moment = require('moment');
-const moment = require('moment-timezone');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -17,7 +15,6 @@ app.get('/', (req, res) => {
 
 // MVP - log in route; if returning user, will already be in database 
 app.get('/api/user/:user_id', cors(), async (req, res) => {
-  console.log(req.params.user_id)
   try {
     const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.params.user_id]);
     res.send(users);
@@ -30,53 +27,27 @@ app.get('/api/done/:user_id', cors(), async (req, res) => {
   try {
     const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.params.user_id]);
     // test_challenge and test_created will be generated from backend, separate from route
-    const { rows: timestamp } = await db.query("SELECT test_created FROM users WHERE user_id = $1", [req.params.user_id]);
 
-    // Codewars' List Completed Challenges API returns timestamp challenge was completed ("completedAt")
-
-    // check that test_challenge is in list of completed challenges
-    // check that completedAt - timestamp <= 10 minutes or else fail
+    if (users.length !== 1) {
+      return res.status(400).send(`No user with user id ${req.params.user_id}`);
+    }
+    if (users[0].validated) {
+      return res.status(200).json({'validated': true});
+    }
     
-    console.log(users[0].username)
     const url = `https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`;
-    console.log(url);
     
     fetch(url)
       .then((response) => response.json())
       .then((data) => {
-        
-        console.log(data.data)
+    
         for (const challenge of data.data) {
-          console.log(challenge.id);
-          if (users[0].test_challenge === challenge.id) {
-            // test_challenge = '5dd462a573ee6d0014ce715b'
-            console.log("test challenge passed, almost validated");
-
-            console.log(timestamp[0].test_created)
-
-            // console.log(Date.parse('2023-05-03 19:34:06.500939-04') - timestamp[0].test_created)
-            console.log(challenge.completedAt);
-            console.log(Date.parse(challenge.completedAt) - timestamp);
-
-            if (Date.parse(challenge.completedAt) - timestamp <= 600000) {
-            // if (Date.parse('2023-05-03 19:34:06.500939-04') - timestamp[0].test_created <= 600000) {
-              console.log("validated")
-              break;
-              // if true, user has passed validation
-                // in db, update validation = true
-                // send validation status to frontend to show schedule page
-              
-              // if false, user has failed validation
-            } else {
-              console.log("test challenge passed but timed out, not validated");
-              break;
-            }
+          if ((users[0].test_challenge === challenge.id) && (Date.parse(challenge.completedAt) - users[0].test_created <= 600000)) {
+            db.query("UPDATE users SET validated = true WHERE user_id = $1", [req.params.user_id]);
+            return res.status(200).json({'validated': true});
           }
-          // test_challenge = '643af0fa9fa6c406b47c5399'
-          console.log("test challenge failed, not validated")
+          res.status(200).json({'validated': false});
         }
-
-        // res.send(data)
       }); 
   } catch (e) {
     return res.status(400).json({ e });

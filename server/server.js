@@ -57,20 +57,38 @@ app.get('/api/done/:user_id', cors(), async (req, res) => {
 // MVP - new user sign up + submit codewars username route
 app.post('/api/users', async (req, res) => {
   try {
-    await db.query("INSERT INTO users(user_id, username, email) VALUES($1, $2, $3)", [req.body.user_id, req.body.username, req.body.email]);
-    const returnObj = {
-      user_id: req.body.user_id,
-      username: req.body.username,
-      email: req.body.email
-    }
-    return res.status(200).json(returnObj);
-} catch (e) {
+    // call Auth0 API
+
+    // if user_id is valid Auth0 ID,
+
+      // call Codewars API
+
+      // if username is valid Codewars username,
+        // if test is passed within 10 min, (*** do I just want to check this? or do I also want to check done / check done first?)
+          // user is valid
+        // otherwise,
+          // user is invalid, resubmit test (or restart whole validation process??)
+        // otherwise, 
+          // user is invalid; resubmit test
+      // otherwise,
+        // user is invalid; resubmit Codewars username and/or Auth0 ID (email?)
+    // otherwise, 
+      // user is invalid; resubmit Auth0 ID
+
+
+    await db.query(
+      "INSERT INTO users(user_id, username, email, validated) VALUES($1, $2, $3, false) ON CONFLICT (user_id) DO UPDATE SET username = Excluded.username", 
+      [req.body.user_id, req.body.username, req.body.email]
+    );
+    // on conflict -- user might try to sign in twice without validating
+
+    res.status(200).json({'validated': false});
+  } catch (e) {
     return res.status(400).send(String(e));
   }
 });
 
 
-// console.log that your server is up and running
 app.listen(PORT, () => {
   console.log(`Hello, server is listening on ${PORT}`);
 });

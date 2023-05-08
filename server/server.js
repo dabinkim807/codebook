@@ -58,6 +58,18 @@ app.get('/api/done/:user_id', cors(), async (req, res) => {
 app.post('/api/users', async (req, res) => {
   try {
     // call Auth0 API
+    // Auth0 return data = {
+    //   given_name: 'Dana', 
+    //   family_name: 'Kim',
+    //   nickname: 'dabinkim807', 
+    //   name: 'Dana Kim', 
+    //   picture: 'https://lh3.googleusercontent.com/a/AGNmyxa2gCzcpNHziuFs8bC0ErSUEttDTPi-x2UZG7Sl-Q=s96-c',
+    //   email: "dabinkim807@gmail.com"
+    //   email_verified: true,
+    //   locale: "en",
+    //   sub: "google-oauth2|115940204927970477883",
+    //   updated_at: "2023-05-08T13:24:52.523Z"
+    // }
 
     // if user_id is valid Auth0 ID,
 

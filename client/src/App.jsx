@@ -20,7 +20,7 @@ const LogoutButton = () => {
 
 const Profile = () => {
   const { user, isAuthenticated, isLoading } = useAuth0();
-
+  console.log(user);
   if (isLoading) {
     return <div>Loading ...</div>;
   }
@@ -37,15 +37,14 @@ const Profile = () => {
 };
 
 function App() {
-  
+  const { user, isAuthenticated, isLoading } = useAuth0();
 
   return (
     <div className="App">
-      <LoginButton />
-      <LogoutButton />
       <Profile />
 
-     {/* { ? <ValidationPage/> : <SchedulePage/ >} */}
+      {!isAuthenticated ? (<LoginButton />) : (<LogoutButton />)}
+     {/* { ? <ValidationPage /> : <SchedulePage />} */}
     </div>
   )
 }

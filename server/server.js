@@ -3,18 +3,38 @@ const cors = require('cors');
 require('dotenv').config();
 const path = require('path');
 const db = require('./db/db-connection.js');
+const { Configuration, OpenAIApi } = require("openai");
+const { auth } = require("express-oauth2-jwt-bearer");
+const { AuthenticationClient } = require("auth0");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+const jwtCheck = auth({
+  audience: process.env.VITE_IDENTIFIER,
+  issuerBaseURL: process.env.VITE_AUTH0_DOMAIN,
+  tokenSigningAlg: 'RS256'
+});
+const auth0 = new AuthenticationClient({
+  domain: process.env.VITE_AUTH0_DOMAIN,
+  clientId: process.env.VITE_AUTH0_CLIENT_ID
+});
+
 app.use(cors());
 app.use(express.json());
+// app.use(jwtCheck);   // applies authorization requirement to access all routes; can be applied individually
 
 app.get('/', (req, res) => {
   res.send("Hi! This is Dana's Express JS template");
 });
 
+// shows "UnauthorizedError: Unauthorized" when logged out and logged in (should only show for logged out)
+app.get('/authorized', jwtCheck, (req, res) => {
+  res.send('Secured Resource');
+});
+
 // MVP - log in route; if returning user, will already be in database 
-app.get('/api/user/:user_id', cors(), async (req, res) => {
+app.get('/api/user/:user_id', jwtCheck, async (req, res) => {
   try {
     const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.params.user_id]);
     res.send(users);
@@ -23,7 +43,7 @@ app.get('/api/user/:user_id', cors(), async (req, res) => {
   }
 });
 // MVP - validation route; after post, basic user info is in database
-app.get('/api/done/:user_id', cors(), async (req, res) => {
+app.get('/api/done/:user_id', jwtCheck, async (req, res) => {
   try {
     const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.params.user_id]);
     // test_challenge and test_created will be generated from backend, separate from route
@@ -55,9 +75,21 @@ app.get('/api/done/:user_id', cors(), async (req, res) => {
 });
 
 // MVP - new user sign up + submit codewars username route
-app.post('/api/users', async (req, res) => {
+app.post('/api/users', jwtCheck, async (req, res) => {
   try {
     // call Auth0 API
+    // Auth0 return data = {
+    //   given_name: 'Dana', 
+    //   family_name: 'Kim',
+    //   nickname: 'dabinkim807', 
+    //   name: 'Dana Kim', 
+    //   picture: 'https://lh3.googleusercontent.com/a/AGNmyxa2gCzcpNHziuFs8bC0ErSUEttDTPi-x2UZG7Sl-Q=s96-c',
+    //   email: "dabinkim807@gmail.com"
+    //   email_verified: true,
+    //   locale: "en",
+    //   sub: "google-oauth2|115940204927970477883",
+    //   updated_at: "2023-05-08T13:24:52.523Z"
+    // }
 
     // if user_id is valid Auth0 ID,
 

@@ -1,7 +1,6 @@
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
-import Logo from '../assets/BlueTechtonicaWord.png'
 
 
 function MyNavBar(props) {
@@ -22,7 +21,7 @@ function MyNavBar(props) {
         <Navbar.Toggle />
         <Navbar.Collapse className="justify-content-end">
           <Navbar.Text>
-            Signed in as: <a href="#login">Cristina Rodriguez</a>
+            Signed in as: <a href="#login">Name of User</a>
           </Navbar.Text>
         </Navbar.Collapse>
       </Container>

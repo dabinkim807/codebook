@@ -20,7 +20,9 @@ const LogoutButton = () => {
 
 const Profile = () => {
   const { user, isAuthenticated, isLoading } = useAuth0();
-
+  
+  // my frontend has access to user data returned from Auth0; I can send the data to the backend
+  console.log(user);
   if (isLoading) {
     return <div>Loading ...</div>;
   }
@@ -37,15 +39,14 @@ const Profile = () => {
 };
 
 function App() {
-  
+  const { isAuthenticated } = useAuth0();
 
   return (
     <div className="App">
-      <LoginButton />
-      <LogoutButton />
       <Profile />
 
-     {/* { ? <ValidationPage/> : <SchedulePage/ >} */}
+      {!isAuthenticated ? (<LoginButton />) : (<LogoutButton />)}
+     {/* { ? <ValidationPage /> : <SchedulePage />} */}
     </div>
   )
 }

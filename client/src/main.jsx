@@ -5,6 +5,7 @@ import { Auth0Provider } from '@auth0/auth0-react';
 import './index.css'
 const DOMAIN = import.meta.env.VITE_AUTH0_DOMAIN;
 const CLIENT_ID = import.meta.env.VITE_AUTH0_CLIENT_ID;
+const IDENTIFIER = import.meta.env.VITE_IDENTIFIER;
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -12,7 +13,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     domain={DOMAIN}
     clientId={CLIENT_ID}
     authorizationParams={{
-      redirect_uri: window.location.origin
+      redirect_uri: window.location.origin,
+      audience: IDENTIFIER,
+      scope: "openid profile email"
     }}
     >
       <App />

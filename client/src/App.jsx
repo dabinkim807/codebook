@@ -37,7 +37,7 @@ const Profile = () => {
 };
 
 function App() {
-  const { user, isAuthenticated, isLoading } = useAuth0();
+  const { isAuthenticated } = useAuth0();
 
   return (
     <div className="App">

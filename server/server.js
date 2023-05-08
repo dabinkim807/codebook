@@ -37,7 +37,8 @@ app.get('/authorized', jwtCheck, (req, res) => {
 app.get('/api/user/:user_id', jwtCheck, async (req, res) => {
   try {
     const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.params.user_id]);
-    res.send(users);
+    console.log(users.length === 1)
+    res.json(users.length === 1);
   } catch (e) {
     return res.status(400).json({ e });
   }
@@ -109,7 +110,7 @@ app.post('/api/users', jwtCheck, async (req, res) => {
 
 
     await db.query(
-      "INSERT INTO users(user_id, username, email, validated) VALUES($1, $2, $3, false) ON CONFLICT (user_id) DO UPDATE SET username = Excluded.username", 
+      "INSERT INTO users(user_id, username, email) VALUES($1, $2, $3) ON CONFLICT (user_id) DO UPDATE SET username = Excluded.username", 
       [req.body.user_id, req.body.username, req.body.email]
     );
     // on conflict -- user might try to sign in twice without validating

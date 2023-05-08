@@ -1,7 +1,10 @@
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React from "react";
+import { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
+import Validation from './components/Validation';
+import Schedule from './components/Schedule';
 
 const LoginButton = () => {
   const { loginWithRedirect } = useAuth0();
@@ -39,14 +42,25 @@ const Profile = () => {
 };
 
 function App() {
-  const { isAuthenticated } = useAuth0();
+  const { user, isAuthenticated, isLoading } = useAuth0();
+
+  const [idExists, setIdExists] = useState(false);
+
+  const getRequest = () => {
+		fetch(`http://localhost:8080/api/user/${user === undefined ? "undefined" : user.sub}`)
+		.then((response) => response.status === 200 ? response.json(): false)
+		.then(idExists => setIdExists(idExists));
+	}
+	
+  useEffect(() => {getRequest()}, []);
 
   return (
     <div className="App">
-      <Profile />
-
+      
       {!isAuthenticated ? (<LoginButton />) : (<LogoutButton />)}
-     {/* { ? <ValidationPage /> : <SchedulePage />} */}
+
+      <Profile />
+      {isAuthenticated ? (idExists ? (<Schedule />) : (<Validation />)) : <></>}
     </div>
   )
 }

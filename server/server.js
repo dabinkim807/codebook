@@ -1,11 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-// const path = require('path');
 const db = require('./db/db-connection.js');
-// const { Configuration, OpenAIApi } = require("openai");
 const { auth } = require("express-oauth2-jwt-bearer");
-// const { AuthenticationClient } = require("auth0");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -30,23 +27,22 @@ app.get('/authorized', jwtCheck, (req, res) => {
 });
 
 // MVP - log in route; if returning user, will already be in database 
-app.get('/api/user/:user_id', jwtCheck, async (req, res) => {
+app.get('/api/user', jwtCheck, async (req, res) => {
   try {
-    const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.params.user_id]);
-    console.log(users.length === 1)
+    const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
     res.json(users.length === 1);
   } catch (e) {
     return res.status(400).json({ e });
   }
 });
 // MVP - validation route; after post, basic user info is in database
-app.get('/api/done/:user_id', jwtCheck, async (req, res) => {
+app.get('/api/done', jwtCheck, async (req, res) => {
   try {
-    const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.params.user_id]);
+    const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
     // test_challenge and test_created will be generated from backend, separate from route
 
     if (users.length !== 1) {
-      return res.status(400).send(`No user with user id ${req.params.user_id}`);
+      return res.status(400).send(`No user with user id ${req.auth.payload.sub}`);
     }
     if (users[0].validated) {
       return res.status(200).json({'validated': true});
@@ -60,7 +56,7 @@ app.get('/api/done/:user_id', jwtCheck, async (req, res) => {
     
         for (const challenge of data.data) {
           if ((users[0].test_challenge === challenge.id) && (Date.parse(challenge.completedAt) - users[0].test_created <= 600000)) {
-            db.query("UPDATE users SET validated = true WHERE user_id = $1", [req.params.user_id]);
+            db.query("UPDATE users SET validated = true WHERE user_id = $1", [req.auth.payload.sub]);
             return res.status(200).json({'validated': true});
           }
           res.status(200).json({'validated': false});

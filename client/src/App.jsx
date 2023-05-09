@@ -49,7 +49,7 @@ function App() {
   const getRequest = async () => {
     if (user) {
       const token = await getAccessTokenSilently()
-      const response = await fetch(`http://localhost:8080/api/user/${user === undefined ? "undefined" : user.sub}`, {
+      const response = await fetch(`http://localhost:8080/api/user`, {
         method: "GET",
         headers: {
           "authorization": `BEARER ${token}`,
@@ -61,7 +61,7 @@ function App() {
       const exists = await response.json();
       setIdExists(exists);
     }
-	}
+	} 
 	
   useEffect(() => {getRequest()}, [user ]);
 

@@ -1,21 +1,20 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const path = require('path');
+// const path = require('path');
 const db = require('./db/db-connection.js');
-const { Configuration, OpenAIApi } = require("openai");
+// const { Configuration, OpenAIApi } = require("openai");
 const { auth } = require("express-oauth2-jwt-bearer");
-const { AuthenticationClient } = require("auth0");
+// const { AuthenticationClient } = require("auth0");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 const jwtCheck = auth({
-  audience: process.env.VITE_IDENTIFIER,
-  issuerBaseURL: process.env.VITE_AUTH0_DOMAIN,
+  audience: 'https://codebook/api',
+  issuerBaseURL: 'https://dev-y8l2e8exqiihl4qw.us.auth0.com/',
   tokenSigningAlg: 'RS256'
 });
-
 
 app.use(cors());
 app.use(express.json());

@@ -49,7 +49,7 @@ function App() {
   const getRequest = async () => {
     if (user) {
       const token = await getAccessTokenSilently()
-      const response = await fetch(`http://localhost:8080/api/user`, {
+      const response = await fetch("/api/user", {
         method: "GET",
         headers: {
           "authorization": `BEARER ${token}`

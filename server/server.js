@@ -1,23 +1,16 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const path = require('path');
 const db = require('./db/db-connection.js');
-const { Configuration, OpenAIApi } = require("openai");
 const { auth } = require("express-oauth2-jwt-bearer");
-const { AuthenticationClient } = require("auth0");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 const jwtCheck = auth({
-  audience: process.env.VITE_IDENTIFIER,
-  issuerBaseURL: process.env.VITE_AUTH0_DOMAIN,
+  audience: 'https://codebook/api',
+  issuerBaseURL: 'https://dev-y8l2e8exqiihl4qw.us.auth0.com/',
   tokenSigningAlg: 'RS256'
-});
-const auth0 = new AuthenticationClient({
-  domain: process.env.VITE_AUTH0_DOMAIN,
-  clientId: process.env.VITE_AUTH0_CLIENT_ID
 });
 
 app.use(cors());
@@ -34,22 +27,22 @@ app.get('/authorized', jwtCheck, (req, res) => {
 });
 
 // MVP - log in route; if returning user, will already be in database 
-app.get('/api/user/:user_id', jwtCheck, async (req, res) => {
+app.get('/api/user', jwtCheck, async (req, res) => {
   try {
-    const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.params.user_id]);
-    res.send(users);
+    const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
+    res.json(users.length === 1);
   } catch (e) {
     return res.status(400).json({ e });
   }
 });
 // MVP - validation route; after post, basic user info is in database
-app.get('/api/done/:user_id', jwtCheck, async (req, res) => {
+app.get('/api/done', jwtCheck, async (req, res) => {
   try {
-    const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.params.user_id]);
+    const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
     // test_challenge and test_created will be generated from backend, separate from route
 
     if (users.length !== 1) {
-      return res.status(400).send(`No user with user id ${req.params.user_id}`);
+      return res.status(400).send(`No user with user id ${req.auth.payload.sub}`);
     }
     if (users[0].validated) {
       return res.status(200).json({'validated': true});
@@ -63,7 +56,7 @@ app.get('/api/done/:user_id', jwtCheck, async (req, res) => {
     
         for (const challenge of data.data) {
           if ((users[0].test_challenge === challenge.id) && (Date.parse(challenge.completedAt) - users[0].test_created <= 600000)) {
-            db.query("UPDATE users SET validated = true WHERE user_id = $1", [req.params.user_id]);
+            db.query("UPDATE users SET validated = true WHERE user_id = $1", [req.auth.payload.sub]);
             return res.status(200).json({'validated': true});
           }
           res.status(200).json({'validated': false});
@@ -109,7 +102,7 @@ app.post('/api/users', jwtCheck, async (req, res) => {
 
 
     await db.query(
-      "INSERT INTO users(user_id, username, email, validated) VALUES($1, $2, $3, false) ON CONFLICT (user_id) DO UPDATE SET username = Excluded.username", 
+      "INSERT INTO users(user_id, username, email) VALUES($1, $2, $3) ON CONFLICT (user_id) DO UPDATE SET username = Excluded.username", 
       [req.body.user_id, req.body.username, req.body.email]
     );
     // on conflict -- user might try to sign in twice without validating

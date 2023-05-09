@@ -17,6 +17,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       audience: IDENTIFIER,
       scope: "openid profile email"
     }}
+    cacheLocation="localstorage"
     >
       <App />
     </Auth0Provider>

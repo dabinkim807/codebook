@@ -1,7 +1,10 @@
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React from "react";
+import { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
+import Validation from './components/Validation';
+import Schedule from './components/Schedule';
 
 const LoginButton = () => {
   const { loginWithRedirect } = useAuth0();
@@ -39,14 +42,36 @@ const Profile = () => {
 };
 
 function App() {
-  const { isAuthenticated } = useAuth0();
+  const { user, isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
+
+  const [idExists, setIdExists] = useState(false);
+
+  const getRequest = async () => {
+    if (user) {
+      const token = await getAccessTokenSilently()
+      const response = await fetch(`http://localhost:8080/api/user`, {
+        method: "GET",
+        headers: {
+          "authorization": `BEARER ${token}`,
+        }
+      })
+      if (response.status !== 200) {
+        return
+      }
+      const exists = await response.json();
+      setIdExists(exists);
+    }
+	} 
+	
+  useEffect(() => {getRequest()}, [user ]);
 
   return (
     <div className="App">
-      <Profile />
-
+      
       {!isAuthenticated ? (<LoginButton />) : (<LogoutButton />)}
-     {/* { ? <ValidationPage /> : <SchedulePage />} */}
+
+      <Profile />
+      {isAuthenticated ? (idExists ? (<Schedule />) : (<Validation />)) : <></>}
     </div>
   )
 }

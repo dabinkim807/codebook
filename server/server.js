@@ -15,10 +15,7 @@ const jwtCheck = auth({
   issuerBaseURL: process.env.VITE_AUTH0_DOMAIN,
   tokenSigningAlg: 'RS256'
 });
-const auth0 = new AuthenticationClient({
-  domain: process.env.VITE_AUTH0_DOMAIN,
-  clientId: process.env.VITE_AUTH0_CLIENT_ID
-});
+
 
 app.use(cors());
 app.use(express.json());

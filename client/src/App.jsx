@@ -42,17 +42,28 @@ const Profile = () => {
 };
 
 function App() {
-  const { user, isAuthenticated, isLoading } = useAuth0();
+  const { user, isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
 
   const [idExists, setIdExists] = useState(false);
 
-  const getRequest = () => {
-		fetch(`http://localhost:8080/api/user/${user === undefined ? "undefined" : user.sub}`)
-		.then((response) => response.status === 200 ? response.json(): false)
-		.then(idExists => setIdExists(idExists));
+  const getRequest = async () => {
+    if (user) {
+      const token = await getAccessTokenSilently()
+      const response = await fetch(`http://localhost:8080/api/user/${user === undefined ? "undefined" : user.sub}`, {
+        method: "GET",
+        headers: {
+          "authorization": `BEARER ${token}`,
+        }
+      })
+      if (response.status !== 200) {
+        return
+      }
+      const exists = await response.json();
+      setIdExists(exists);
+    }
 	}
 	
-  useEffect(() => {getRequest()}, []);
+  useEffect(() => {getRequest()}, [user ]);
 
   return (
     <div className="App">

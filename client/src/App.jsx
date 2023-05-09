@@ -52,7 +52,7 @@ function App() {
       const response = await fetch(`http://localhost:8080/api/user`, {
         method: "GET",
         headers: {
-          "authorization": `BEARER ${token}`,
+          "authorization": `BEARER ${token}`
         }
       })
       if (response.status !== 200) {

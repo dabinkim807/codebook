@@ -13,6 +13,7 @@ const jwtCheck = auth({
   tokenSigningAlg: 'RS256'
 });
 
+const token = process.env.MANAGEMENT_API_ACCESS_TOKEN;
 app.use(cors());
 app.use(express.json());
 // app.use(jwtCheck);   // applies authorization requirement to access all routes; can be applied individually
@@ -70,42 +71,53 @@ app.get('/api/done', jwtCheck, async (req, res) => {
 // MVP - new user sign up + submit codewars username route
 app.post('/api/users', jwtCheck, async (req, res) => {
   try {
-    // call Auth0 API
-    // Auth0 return data = {
-    //   given_name: 'Dana', 
-    //   family_name: 'Kim',
-    //   nickname: 'dabinkim807', 
-    //   name: 'Dana Kim', 
-    //   picture: 'https://lh3.googleusercontent.com/a/AGNmyxa2gCzcpNHziuFs8bC0ErSUEttDTPi-x2UZG7Sl-Q=s96-c',
-    //   email: "dabinkim807@gmail.com"
-    //   email_verified: true,
-    //   locale: "en",
-    //   sub: "google-oauth2|115940204927970477883",
-    //   updated_at: "2023-05-08T13:24:52.523Z"
-    // }
+    // frontend will send name, id, email, CW username
 
-    // if user_id is valid Auth0 ID,
+    // ** call Auth0 API
+    const params = new URLSearchParams({
+      q: `user_id:"${req.auth.payload.sub}"`,
+      search_engine: 'v3'
+    });
+    const auth_response = await fetch(`https://dev-y8l2e8exqiihl4qw.us.auth0.com/api/v2/users?${params}`, {
+      method: "GET",
+      headers: {
+        "authorization": `BEARER ${token}`
+      }
+    });
+    const auth_data = await auth_response.json();
+    console.log(auth_data);
 
-      // call Codewars API
+    // ** choose a random code challenge from db
+    const { rows: random } = await db.query("SELECT * FROM code_challenges WHERE rank = 'Beginner' ORDER BY random() LIMIT 1");
+    console.log(random);
+    console.log(random[0].challenge);
 
-      // if username is valid Codewars username,
-        // if test is passed within 10 min, (*** do I just want to check this? or do I also want to check done / check done first?)
-          // user is valid
-        // otherwise,
-          // user is invalid, resubmit test (or restart whole validation process??)
-        // otherwise, 
-          // user is invalid; resubmit test
-      // otherwise,
-        // user is invalid; resubmit Codewars username and/or Auth0 ID (email?)
-    // otherwise, 
-      // user is invalid; resubmit Auth0 ID
+    // ** call Codewars List of CC API
+    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${req.body.username}/code-challenges/completed`);
+    const cw_data = await cw_response.json();
+    if (cw_data.success === false) {
+      return res.status(200).json({'validated': false});
+    }
 
+    for (const challenge of data.data) {
+      if (challenge.id !== random[0].challenge) {
+        // on conflict -- user might try to sign in twice without validating
+        const { rows: test } = await db.query(
+          `
+          INSERT INTO users (user_id, username, email, test_challenge, test_created, name) 
+          VALUES($1, $2, $3, $4, $5, $6) 
+          ON CONFLICT (user_id) DO UPDATE SET username = Excluded.username
+          WHERE user_id = $1
+          `
+        , [req.auth.payload.sub, req.body.username, auth_data[0].email, challenge.id, NOW(), auth_data[0].name]);
 
-    await db.query(
-      "INSERT INTO users(user_id, username, email) VALUES($1, $2, $3) ON CONFLICT (user_id) DO UPDATE SET username = Excluded.username", 
-      [req.body.user_id, req.body.username, req.body.email]
-    );
-    // on conflict -- user might try to sign in twice without validating
+        const returnObj = {
+          test_challenge: test.rows[0].test_challenge,
+          test_created: test.rows[0].test_created,
+        }
+        return res.status(200).json(returnObj);
+      }
+    }
 
     res.status(200).json({'validated': false});
   } catch (e) {

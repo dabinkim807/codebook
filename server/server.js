@@ -70,7 +70,9 @@ app.get('/api/done', jwtCheck, async (req, res) => {
 // MVP - new user sign up + submit codewars username route
 app.post('/api/users', jwtCheck, async (req, res) => {
   try {
-    // call Auth0 API
+    ///// frontend will send name, id, email, CW username
+
+    // ** call Auth0 API
     // Auth0 return data = {
     //   given_name: 'Dana', 
     //   family_name: 'Kim',
@@ -84,28 +86,37 @@ app.post('/api/users', jwtCheck, async (req, res) => {
     //   updated_at: "2023-05-08T13:24:52.523Z"
     // }
 
-    // if user_id is valid Auth0 ID,
+    // ** choose a random code challenge from db
+    // const { rows: random } = await db.query("SELECT * FROM code_challenges WHERE rank = 'Beginner' ORDER BY random() LIMIT 1");
+    // console.log(random);
+    // console.log(random[0].challenge);
 
-      // call Codewars API
+    // // ** call Codewars List of CC API
+    // const response = await fetch(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
+    // const data = await response.json();
+    // if (data.success === false) {
+    //   return res.status(200).json({'validated': false});
+    // }
 
-      // if username is valid Codewars username,
-        // if test is passed within 10 min, (*** do I just want to check this? or do I also want to check done / check done first?)
-          // user is valid
-        // otherwise,
-          // user is invalid, resubmit test (or restart whole validation process??)
-        // otherwise, 
-          // user is invalid; resubmit test
-      // otherwise,
-        // user is invalid; resubmit Codewars username and/or Auth0 ID (email?)
-    // otherwise, 
-      // user is invalid; resubmit Auth0 ID
+    // for (const challenge of data.data) {
+    //   if (challenge.id !== random[0].challenge) {
+    //     // on conflict -- user might try to sign in twice without validating
+    //     const { rows: test } = await db.query(
+    //       `
+    //       INSERT INTO users (user_id, username, email, test_challenge, test_created, name) 
+    //       VALUES($1, $2, $3, $4, $5, $6) 
+    //       ON CONFLICT (user_id) DO UPDATE SET username = Excluded.username
+    //       WHERE user_id = $1
+    //       `
+    //     , [req.auth.payload.sub, req.query.user, req.auth.payload.email, challenge.id, NOW(), req.auth.payload.name]);
 
-
-    await db.query(
-      "INSERT INTO users(user_id, username, email) VALUES($1, $2, $3) ON CONFLICT (user_id) DO UPDATE SET username = Excluded.username", 
-      [req.body.user_id, req.body.username, req.body.email]
-    );
-    // on conflict -- user might try to sign in twice without validating
+    //     const returnObj = {
+    //       test_challenge: test.rows[0].test_challenge,
+    //       test_created: test.rows[0].test_created,
+    //     }
+    //     return res.status(200).json(returnObj);
+    //   }
+    // }
 
     res.status(200).json({'validated': false});
   } catch (e) {

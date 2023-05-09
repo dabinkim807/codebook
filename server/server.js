@@ -1,10 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+const path = require('path');
 const db = require('./db/db-connection.js');
-const { auth } = require("express-oauth2-jwt-bearer");
+const { auth } = require('express-oauth2-jwt-bearer');
 
 const app = express();
+const REACT_BUILD_DIR = path.join(__dirname, "..", "client", "dist");
 const PORT = process.env.PORT || 8080;
 
 const jwtCheck = auth({
@@ -12,14 +14,16 @@ const jwtCheck = auth({
   issuerBaseURL: 'https://dev-y8l2e8exqiihl4qw.us.auth0.com/',
   tokenSigningAlg: 'RS256'
 });
-
 const token = process.env.MANAGEMENT_API_ACCESS_TOKEN;
+
 app.use(cors());
 app.use(express.json());
+app.use(express.static(REACT_BUILD_DIR));
 // app.use(jwtCheck);   // applies authorization requirement to access all routes; can be applied individually
 
 app.get('/', (req, res) => {
-  res.send("Hi! This is Dana's Express JS template");
+  // res.send("Hi! This is Dana's Express JS template");
+  res.sendFile(path.join(REACT_BUILD_DIR, "index.html"));
 });
 
 // shows "UnauthorizedError: Unauthorized" when logged out and logged in (should only show for logged out)

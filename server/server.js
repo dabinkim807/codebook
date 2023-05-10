@@ -49,7 +49,7 @@ app.get('/api/user', jwtCheck, async (req, res) => {
     // otherwise, test_challenge has already been assigned
       // call CW API, check test_challenge is passed
         // if true, send user to Schedule Page
-        // otherise, has 10 min passed from test_created?
+        // otherwise, has 10 min passed from test_created?
           // if true, then send user back to Sign Up component
           // otherwise, show user Validation Page and send test_challenge and/or test_created
 
@@ -89,9 +89,18 @@ app.get('/api/done', jwtCheck, async (req, res) => {
 // new user sign up + submit codewars username route
 app.post('/api/users', jwtCheck, async (req, res) => {
   try {
-    // frontend will send name, id, email, CW username
+    //// call Codewars List of CC API
+    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${req.body.username}/code-challenges/completed`);
+    const cw_data = await cw_response.json();
 
-    // call Auth0 API
+    // if username does not exist in Codewars API, cw_data.success === false
+    //   keep user at Sign Up component
+    // otherwise cw_data.success === undefined
+    if (cw_data.success === false) {
+      return res.status(200).json({'validated': false});
+    }
+
+    //// call Auth0 API
     // jwtCheck checks the accessToken that the user passes to backend thru frontend request via getAccessTokensSilently and provides the user data automatically
     const params = new URLSearchParams({
       q: `user_id:"${req.auth.payload.sub}"`,
@@ -104,44 +113,35 @@ app.post('/api/users', jwtCheck, async (req, res) => {
       }
     });
     const auth_data = await auth_response.json();
-    console.log(auth_data);
+    // console.log(auth_data);
 
-    // choose a random code challenge from db
-    // after adding more hardcoded code challenges to db, increase limit to ~5
-    const { rows: random } = await db.query("SELECT * FROM code_challenges WHERE rank = 'Beginner' ORDER BY random() LIMIT 1");
-    console.log(random);
-    console.log(random[0].challenge);
+    const { rows: questions } = await db.query("SELECT challenge FROM code_challenges WHERE rank = 'Beginner'");
+    // console.log(questions);
+    // console.log(questions[0].challenge);
 
-    // call Codewars List of CC API
-    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${req.body.username}/code-challenges/completed`);
-    const cw_data = await cw_response.json();
-    if (cw_data.success === false) {
-      return res.status(200).json({'validated': false});
-    }
+    let question_ids = questions.map(q => q.challenge);
+    // console.log(question_ids);
 
-    for (const challenge of data.data) {
-      if (challenge.id !== random[0].challenge) {
-        // on conflict -- user might try to sign in twice without validating
-        const { rows: test } = await db.query(
-          `
-          INSERT INTO users (user_id, username, email, test_challenge, test_created, name) 
-          VALUES($1, $2, $3, $4, $5, $6) 
-          ON CONFLICT (user_id) DO UPDATE SET username = Excluded.username
-          WHERE user_id = $1
-          `
-        , [req.auth.payload.sub, req.body.username, auth_data[0].email, challenge.id, NOW(), auth_data[0].name]);
+    let done_ids = new Set(cw_data.data.map(q => q.id));
 
-        const returnObj = {
-          test_challenge: test.rows[0].test_challenge,
-          test_created: test.rows[0].test_created,
-        }
-        return res.status(200).json(returnObj);
-      }
-    }
+    let not_done_ids = question_ids.filter(q => !done_ids.has(q));
+    let random_idx = Math.floor(Math.random() * not_done_ids.length);
+    let random_question = not_done_ids[random_idx];
+    let time_now = new Date();
+    
+    await db.query(
+      `
+      INSERT INTO users (user_id, username, email, test_challenge, test_created, name) 
+      VALUES($1, $2, $3, $4, $5, $6);
+      `
+    , [req.auth.payload.sub, req.body.username, auth_data[0].email, random_question, time_now, auth_data[0].name]);
 
-    res.status(200).json({'validated': false});
+    return res.status(200).json({
+      test_challenge: random_question,
+      test_created: time_now
+    });
   } catch (e) {
-    return res.status(400).send(String(e));
+    return res.status(400).json({e});
   }
 });
 

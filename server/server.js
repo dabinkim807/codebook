@@ -47,8 +47,8 @@ app.get('/api/user', jwtCheck, async (req, res) => {
     // user is validated
       // if true, then show Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
     // otherwise, test_challenge has already been assigned
-      // call CW API, check test_challenge is passed
-        // if true, send user to Schedule Page
+      // call CW API, check test_challenge is fully passed (completed within time limit)
+        // if true, set validated === true and send user to Schedule Page
         // otherwise, has 10 min passed from test_created?
           // if true, then send user back to Sign Up component
           // otherwise, show user Validation Page and send test_challenge and/or test_created
@@ -57,30 +57,62 @@ app.get('/api/user', jwtCheck, async (req, res) => {
     return res.status(400).json({ e });
   }
 });
+
 // validation route; after post, basic user info is in database
 app.get('/api/done', jwtCheck, async (req, res) => {
   try {
     const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
 
+    // if user tries to run Done route without going through sign up process (i.e. runs request through Postman), user does not exist in db
     if (users.length !== 1) {
       return res.status(400).send(`No user with user id ${req.auth.payload.sub}`);
     }
+    // if scheduled job runs before user clicks Done button, validated === true in db
+      // send user to Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
     if (users[0].validated) {
-      return res.status(200).json({'validated': true});
+      return res.status(200).json({
+        cc_category: users[0].cc_category,
+        cc_rank: users[0].cc_rank,
+        cc_frequency: users[0].cc_frequency, 
+        cc_day: users[0].cc_day
+      });
     }
     
-    fetch(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`)
-      .then((response) => response.json())
-      .then((data) => {
+    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
+    const cw_data = await cw_response.json();
+      
+    for (const challenge of cw_data.data) {
+      // if user completed test within time limit, set validated === true, 
+        // send user to Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
+      if ((users[0].test_challenge === challenge.id) && (Date.parse(challenge.completedAt) - users[0].test_created <= 600000)) {
+        await db.query("UPDATE users SET validated = true WHERE user_id = $1", [req.auth.payload.sub]);
+        return res.status(200).json({
+          cc_category: users[0].cc_category,
+          cc_rank: users[0].cc_rank,
+          cc_frequency: users[0].cc_frequency, 
+          cc_day: users[0].cc_day
+        });
+      }
+    }
     
-        for (const challenge of data.data) {
-          if ((users[0].test_challenge === challenge.id) && (Date.parse(challenge.completedAt) - users[0].test_created <= 600000)) {
-            db.query("UPDATE users SET validated = true WHERE user_id = $1", [req.auth.payload.sub]);
-            return res.status(200).json({'validated': true});
-          }
-          res.status(200).json({'validated': false});
-        }
-      }); 
+    // if user clicks Done and test is not completed and 10 min hasn't passed yet,
+      // re-send user the same test and keep them on Validation Page
+    if (Date.now() - users[0].test_created <= 600000) {
+      return res.status(200).json({
+        test_challenge: users[0].test_challenge, 
+        test_created: users[0].test_created,
+        validated: false,
+        cc_category: users[0].cc_category,
+        cc_rank: users[0].cc_rank,
+        cc_frequency: users[0].cc_frequency, 
+        cc_day: users[0].cc_day
+      });
+    }
+
+    // if user has not passed test and 10 min have passed, validated === false
+      // delete user from db and send them back to Sign Up component
+    await db.query("DELETE FROM users WHERE user_id = $1", [req.auth.payload.sub]);
+    res.status(200).json({validated: false});
   } catch (e) {
     return res.status(400).json({ e });
   }
@@ -97,7 +129,7 @@ app.post('/api/users', jwtCheck, async (req, res) => {
     //   keep user at Sign Up component
     // otherwise cw_data.success === undefined
     if (cw_data.success === false) {
-      return res.status(200).json({'validated': false});
+      return res.status(200).json({validated: false});
     }
 
     //// call Auth0 API

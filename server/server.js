@@ -19,65 +19,174 @@ const token = process.env.MANAGEMENT_API_ACCESS_TOKEN;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(REACT_BUILD_DIR));
-// app.use(jwtCheck);   // applies authorization requirement to access all routes; can be applied individually
+// app.use(jwtCheck);   // applies authorization requirement to access all routes; can be applied to individual routes
 
 app.get('/', (req, res) => {
-  // res.send("Hi! This is Dana's Express JS template");
   res.sendFile(path.join(REACT_BUILD_DIR, "index.html"));
 });
 
-// shows "UnauthorizedError: Unauthorized" when logged out and logged in (should only show for logged out)
 app.get('/authorized', jwtCheck, (req, res) => {
+  console.log(req.auth.payload);
   res.send('Secured Resource');
 });
 
-// MVP - log in route; if returning user, will already be in database 
+// this route proves that all req.auth.payload comes from accessToken sent from frontend
+app.get('/unauthorized', (req, res) => {
+  console.log(req.auth);
+  res.send('Unsecured Resource');
+});
+
+// log in route; if returning user, will already be in database 
 app.get('/api/user', jwtCheck, async (req, res) => {
   try {
     const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
-    res.json(users.length === 1);
+    
+    // if user is not in db, validated === false
+      // show user Sign Up component
+    if (users.length !== 1) {
+      return res.status(200).json({validated: false});
+    }
+
+    // if user is validated, validated === true
+      // show Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
+    if (users[0].validated) {
+      return res.status(200).json({
+        cc_category: users[0].cc_category,
+        cc_rank: users[0].cc_rank,
+        cc_frequency: users[0].cc_frequency, 
+        cc_day: users[0].cc_day,
+        validated: true
+      });
+    }
+
+    // if user is in db but is not validated, test_challenge has already been assigned
+    // call CW API, check test_challenge is fully passed (completed within time limit)
+    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
+    const cw_data = await cw_response.json();
+      
+    for (const challenge of cw_data.data) {
+      // if user completed test within time limit, set validated === true, 
+        // send user to Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
+      if ((users[0].test_challenge === challenge.id) && (Date.parse(challenge.completedAt) - users[0].test_created <= 600000)) {
+        await db.query("UPDATE users SET validated = true WHERE user_id = $1", [req.auth.payload.sub]);
+        return res.status(200).json({
+          cc_category: users[0].cc_category,
+          cc_rank: users[0].cc_rank,
+          cc_frequency: users[0].cc_frequency, 
+          cc_day: users[0].cc_day,
+          validated: true
+        });
+      }
+    }
+
+    // if test is not completed and 10 min hasn't passed yet,
+      // re-send user the same test and keep them on Validation Page
+    if (Date.now() - users[0].test_created <= 600000) {
+      return res.status(200).json({
+        test_challenge: users[0].test_challenge, 
+        test_created: users[0].test_created,
+        validated: false
+      });
+    }
+  
+    // if user has not passed test and 10 min have passed, validated === false
+      // delete user from db and send them back to Sign Up component
+    await db.query("DELETE FROM users WHERE user_id = $1", [req.auth.payload.sub]);
+    res.status(200).json({validated: false});
   } catch (e) {
     return res.status(400).json({ e });
   }
 });
-// MVP - validation route; after post, basic user info is in database
+
+// validation route; after post, basic user info is in database
 app.get('/api/done', jwtCheck, async (req, res) => {
   try {
     const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
-    // test_challenge and test_created will be generated from backend, separate from route
 
+    // if user tries to run Done route without going through sign up process (i.e. runs request through Postman), user does not exist in db
     if (users.length !== 1) {
-      return res.status(400).send(`No user with user id ${req.auth.payload.sub}`);
+      return res.status(400).send(`No user with user ID ${req.auth.payload.sub}`);
     }
+    // if scheduled job runs before user clicks Done button, validated === true in db
+      // send user to Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
     if (users[0].validated) {
-      return res.status(200).json({'validated': true});
+      return res.status(200).json({
+        cc_category: users[0].cc_category,
+        cc_rank: users[0].cc_rank,
+        cc_frequency: users[0].cc_frequency, 
+        cc_day: users[0].cc_day,
+        validated: true
+      });
     }
     
-    const url = `https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`;
+    // stretch goal: to handle multiple pages of results, create a function that calls API for length of pages
+    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
+    const cw_data = await cw_response.json();
+
+    for (const challenge of cw_data.data) {
+      // if user completed test within time limit, set validated === true, 
+        // send user to Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
+      if ((users[0].test_challenge === challenge.id) && (Date.parse(challenge.completedAt) - users[0].test_created <= 600000)) {
+        await db.query("UPDATE users SET validated = true WHERE user_id = $1", [req.auth.payload.sub]);
+        return res.status(200).json({
+          cc_category: users[0].cc_category,
+          cc_rank: users[0].cc_rank,
+          cc_frequency: users[0].cc_frequency, 
+          cc_day: users[0].cc_day,
+          validated: true
+        });
+      }
+    }
     
-    fetch(url)
-      .then((response) => response.json())
-      .then((data) => {
-    
-        for (const challenge of data.data) {
-          if ((users[0].test_challenge === challenge.id) && (Date.parse(challenge.completedAt) - users[0].test_created <= 600000)) {
-            db.query("UPDATE users SET validated = true WHERE user_id = $1", [req.auth.payload.sub]);
-            return res.status(200).json({'validated': true});
-          }
-          res.status(200).json({'validated': false});
-        }
-      }); 
+    // if user clicks Done and test is not completed and 10 min hasn't passed yet,
+      // re-send user the same test and keep them on Validation Page
+    if (Date.now() - users[0].test_created <= 600000) {
+      return res.status(200).json({
+        test_challenge: users[0].test_challenge, 
+        test_created: users[0].test_created,
+        validated: false
+      });
+    }
+
+    // if user has not passed test and 10 min have passed, validated === false
+      // delete user from db and send them back to Sign Up component
+    await db.query("DELETE FROM users WHERE user_id = $1", [req.auth.payload.sub]);
+    res.status(200).json({validated: false});
   } catch (e) {
     return res.status(400).json({ e });
   }
 });
 
-// MVP - new user sign up + submit codewars username route
-app.post('/api/users', jwtCheck, async (req, res) => {
+// new user sign up + submit codewars username route
+app.post('/api/user', jwtCheck, async (req, res) => {
   try {
-    // frontend will send name, id, email, CW username
+    // frontend sends: Codewars username
 
-    // ** call Auth0 API
+    // if user_id already exists in db and user tries to run Post route again (i.e. runs request through Postman), send error
+    const { rows: id } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
+    if (id.length === 1) {
+      return res.status(400).json(`User with user ID ${req.auth.payload.sub} already exists`);
+    }
+
+    // if username already exists in db and another user id tries to submit the same username, send error
+    const { rows: username } = await db.query("SELECT * FROM users WHERE username = $1", [req.body.username]);
+    if (username.length === 1) {
+      return res.status(400).json(`Username ${req.auth.payload.sub} already exists`);
+    }
+
+    //// call Codewars List of CC API
+    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${req.body.username}/code-challenges/completed`);
+    const cw_data = await cw_response.json();
+
+    // if username does not exist in Codewars API, cw_data.success === false
+    //   keep user at Sign Up component
+    // otherwise cw_data.success === undefined
+    if (cw_data.success === false) {
+      return res.status(200).json({validated: false});
+    }
+
+    //// call Auth0 API
+    // jwtCheck checks the accessToken that the user passes to backend thru frontend request via getAccessTokensSilently and provides the user data automatically
     const params = new URLSearchParams({
       q: `user_id:"${req.auth.payload.sub}"`,
       search_engine: 'v3'
@@ -89,43 +198,67 @@ app.post('/api/users', jwtCheck, async (req, res) => {
       }
     });
     const auth_data = await auth_response.json();
-    console.log(auth_data);
+    // console.log(auth_data);
 
-    // ** choose a random code challenge from db
-    const { rows: random } = await db.query("SELECT * FROM code_challenges WHERE rank = 'Beginner' ORDER BY random() LIMIT 1");
-    console.log(random);
-    console.log(random[0].challenge);
+    const { rows: questions } = await db.query("SELECT challenge FROM code_challenges WHERE rank = 'Beginner'");
+    // console.log(questions);
+    // console.log(questions[0].challenge);
 
-    // ** call Codewars List of CC API
-    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${req.body.username}/code-challenges/completed`);
-    const cw_data = await cw_response.json();
-    if (cw_data.success === false) {
-      return res.status(200).json({'validated': false});
-    }
+    let question_ids = questions.map(q => q.challenge);
+    // console.log(question_ids);
 
-    for (const challenge of data.data) {
-      if (challenge.id !== random[0].challenge) {
-        // on conflict -- user might try to sign in twice without validating
-        const { rows: test } = await db.query(
-          `
-          INSERT INTO users (user_id, username, email, test_challenge, test_created, name) 
-          VALUES($1, $2, $3, $4, $5, $6) 
-          ON CONFLICT (user_id) DO UPDATE SET username = Excluded.username
-          WHERE user_id = $1
-          `
-        , [req.auth.payload.sub, req.body.username, auth_data[0].email, challenge.id, NOW(), auth_data[0].name]);
+    let done_ids = new Set(cw_data.data.map(q => q.id));
 
-        const returnObj = {
-          test_challenge: test.rows[0].test_challenge,
-          test_created: test.rows[0].test_created,
-        }
-        return res.status(200).json(returnObj);
-      }
-    }
+    let not_done_ids = question_ids.filter(q => !done_ids.has(q));
+    let random_idx = Math.floor(Math.random() * not_done_ids.length);
+    let random_question = not_done_ids[random_idx];
+    let time_now = new Date();
+    
+    await db.query(
+      `
+      INSERT INTO users (user_id, username, email, test_challenge, test_created, name) 
+      VALUES($1, $2, $3, $4, $5, $6);
+      `
+    , [req.auth.payload.sub, req.body.username, auth_data[0].email, random_question, time_now, auth_data[0].name]);
 
-    res.status(200).json({'validated': false});
+    return res.status(200).json({
+      test_challenge: random_question,
+      test_created: time_now,
+      validated: false
+    });
   } catch (e) {
-    return res.status(400).send(String(e));
+    return res.status(400).json({e});
+  }
+});
+
+// validated user posting/editing/deleting schedule (for delete, frontend can post null values)
+app.post('/api/schedule', jwtCheck, async (req, res) => {
+  try {
+    // frontend sends: cc_category, cc_rank, cc_frequency, cc_day
+
+    // if user tries to run Schedule route without going through sign up process (i.e. runs request through Postman), user does not exist in db
+    const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
+    if (users.length !== 1) {
+      return res.status(400).send(`No user with user ID ${req.auth.payload.sub}`);
+    }
+    if (users[0].validated === false) {
+      return res.status(400).send(`User with user ID ${req.auth.payload.sub} is not validated`);
+    }
+
+    // for simplicity, for now the user has to provide all fields *enforce in the frontend
+      // but users can still use Postman to send invalid inputs that are not allowed by frontend
+      // db will validate for me
+    let inputs = [req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day];
+    if (!(inputs.every(x => x === null) || inputs.every(x => x !== null))) {
+    // same thing as !inputs.every(x => x === null) && !inputs.every(x => x !== null)
+      return res.status(400).send("Inputs must either be all null or all not null");
+    }
+
+    await db.query("UPDATE users SET cc_category = $2, cc_rank = $3, cc_frequency = $4, cc_day = $5 WHERE user_id = $1", 
+    [req.auth.payload.sub, req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day]);
+    return res.status(200).json({...req.body, validated: true});
+  } catch (e) {
+    return res.status(400).json({e});
   }
 });
 

@@ -231,7 +231,7 @@ app.post('/api/user', jwtCheck, async (req, res) => {
   }
 });
 
-// validated user posting or editing schedule
+// validated user posting/editing/deleting schedule (for delete, frontend can post null values)
 app.post('/api/schedule', jwtCheck, async (req, res) => {
   try {
     // frontend sends: cc_category, cc_rank, cc_frequency, cc_day
@@ -246,8 +246,14 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
     }
 
     // for simplicity, for now the user has to provide all fields *enforce in the frontend
-    // but users can still use Postman to send invalid inputs that are not allowed by frontend
-    // db will validate for me
+      // but users can still use Postman to send invalid inputs that are not allowed by frontend
+      // db will validate for me
+    let inputs = [req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day];
+    if (!(inputs.every(x => x === null) || inputs.every(x => x !== null))) {
+    // same thing as !inputs.every(x => x === null) && !inputs.every(x => x !== null)
+      return res.status(400).send("Inputs must either be all null or all not null");
+    }
+
     await db.query("UPDATE users SET cc_category = $2, cc_rank = $3, cc_frequency = $4, cc_day = $5 WHERE user_id = $1", 
     [req.auth.payload.sub, req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day]);
     return res.status(200).json({...req.body, validated: true});

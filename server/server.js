@@ -40,19 +40,59 @@ app.get('/unauthorized', (req, res) => {
 app.get('/api/user', jwtCheck, async (req, res) => {
   try {
     const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
-    res.json(users.length === 1);
-    // user is not in DB
+    
+    // if user is not in db, validated === false
       // show user Sign Up component
+    if (users.length !== 1) {
+      return res.status(200).json({validated: false});
+    }
 
-    // user is validated
-      // if true, then show Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
-    // otherwise, test_challenge has already been assigned
-      // call CW API, check test_challenge is fully passed (completed within time limit)
-        // if true, set validated === true and send user to Schedule Page
-        // otherwise, has 10 min passed from test_created?
-          // if true, then send user back to Sign Up component
-          // otherwise, show user Validation Page and send test_challenge and/or test_created
+    // if user is validated, validated === true
+      // show Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
+    if (users[0].validated) {
+      return res.status(200).json({
+        cc_category: users[0].cc_category,
+        cc_rank: users[0].cc_rank,
+        cc_frequency: users[0].cc_frequency, 
+        cc_day: users[0].cc_day,
+        validated: true
+      });
+    }
 
+    // if user is in db but is not validated, test_challenge has already been assigned
+    // call CW API, check test_challenge is fully passed (completed within time limit)
+    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
+    const cw_data = await cw_response.json();
+      
+    for (const challenge of cw_data.data) {
+      // if user completed test within time limit, set validated === true, 
+        // send user to Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
+      if ((users[0].test_challenge === challenge.id) && (Date.parse(challenge.completedAt) - users[0].test_created <= 600000)) {
+        await db.query("UPDATE users SET validated = true WHERE user_id = $1", [req.auth.payload.sub]);
+        return res.status(200).json({
+          cc_category: users[0].cc_category,
+          cc_rank: users[0].cc_rank,
+          cc_frequency: users[0].cc_frequency, 
+          cc_day: users[0].cc_day,
+          validated: true
+        });
+      }
+    }
+
+    // if test is not completed and 10 min hasn't passed yet,
+      // re-send user the same test and keep them on Validation Page
+    if (Date.now() - users[0].test_created <= 600000) {
+      return res.status(200).json({
+        test_challenge: users[0].test_challenge, 
+        test_created: users[0].test_created,
+        validated: false
+      });
+    }
+  
+    // if user has not passed test and 10 min have passed, validated === false
+      // delete user from db and send them back to Sign Up component
+    await db.query("DELETE FROM users WHERE user_id = $1", [req.auth.payload.sub]);
+    res.status(200).json({validated: false});
   } catch (e) {
     return res.status(400).json({ e });
   }

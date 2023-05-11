@@ -105,7 +105,7 @@ app.get('/api/done', jwtCheck, async (req, res) => {
 
     // if user tries to run Done route without going through sign up process (i.e. runs request through Postman), user does not exist in db
     if (users.length !== 1) {
-      return res.status(400).send(`No user with user id ${req.auth.payload.sub}`);
+      return res.status(400).send(`No user with user ID ${req.auth.payload.sub}`);
     }
     // if scheduled job runs before user clicks Done button, validated === true in db
       // send user to Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
@@ -119,9 +119,10 @@ app.get('/api/done', jwtCheck, async (req, res) => {
       });
     }
     
+    // stretch goal: to handle multiple pages of results, create a function that calls API for length of pages
     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
     const cw_data = await cw_response.json();
-      
+
     for (const challenge of cw_data.data) {
       // if user completed test within time limit, set validated === true, 
         // send user to Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
@@ -157,8 +158,20 @@ app.get('/api/done', jwtCheck, async (req, res) => {
 });
 
 // new user sign up + submit codewars username route
-app.post('/api/users', jwtCheck, async (req, res) => {
+app.post('/api/user', jwtCheck, async (req, res) => {
   try {
+    // if user_id already exists in db and user tries to run Post route again (i.e. runs request through Postman), send error
+    const { rows: id } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
+    if (id.length === 1) {
+      return res.status(400).json(`User with user ID ${req.auth.payload.sub} already exists`);
+    }
+
+    // if username already exists in db and another user id tries to submit the same username, send error
+    const { rows: username } = await db.query("SELECT * FROM users WHERE username = $1", [req.body.username]);
+    if (username.length === 1) {
+      return res.status(400).json(`Username ${req.auth.payload.sub} already exists`);
+    }
+
     //// call Codewars List of CC API
     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${req.body.username}/code-challenges/completed`);
     const cw_data = await cw_response.json();
@@ -215,6 +228,7 @@ app.post('/api/users', jwtCheck, async (req, res) => {
     return res.status(400).json({e});
   }
 });
+
 
 
 app.listen(PORT, () => {

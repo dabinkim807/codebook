@@ -74,7 +74,8 @@ app.get('/api/done', jwtCheck, async (req, res) => {
         cc_category: users[0].cc_category,
         cc_rank: users[0].cc_rank,
         cc_frequency: users[0].cc_frequency, 
-        cc_day: users[0].cc_day
+        cc_day: users[0].cc_day,
+        validated: true
       });
     }
     
@@ -90,7 +91,8 @@ app.get('/api/done', jwtCheck, async (req, res) => {
           cc_category: users[0].cc_category,
           cc_rank: users[0].cc_rank,
           cc_frequency: users[0].cc_frequency, 
-          cc_day: users[0].cc_day
+          cc_day: users[0].cc_day,
+          validated: true
         });
       }
     }
@@ -101,11 +103,7 @@ app.get('/api/done', jwtCheck, async (req, res) => {
       return res.status(200).json({
         test_challenge: users[0].test_challenge, 
         test_created: users[0].test_created,
-        validated: false,
-        cc_category: users[0].cc_category,
-        cc_rank: users[0].cc_rank,
-        cc_frequency: users[0].cc_frequency, 
-        cc_day: users[0].cc_day
+        validated: false
       });
     }
 
@@ -170,7 +168,8 @@ app.post('/api/users', jwtCheck, async (req, res) => {
 
     return res.status(200).json({
       test_challenge: random_question,
-      test_created: time_now
+      test_created: time_now,
+      validated: false
     });
   } catch (e) {
     return res.status(400).json({e});

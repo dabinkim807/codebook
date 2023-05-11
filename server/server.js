@@ -160,6 +160,8 @@ app.get('/api/done', jwtCheck, async (req, res) => {
 // new user sign up + submit codewars username route
 app.post('/api/user', jwtCheck, async (req, res) => {
   try {
+    // frontend sends: Codewars username
+
     // if user_id already exists in db and user tries to run Post route again (i.e. runs request through Postman), send error
     const { rows: id } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
     if (id.length === 1) {
@@ -229,6 +231,30 @@ app.post('/api/user', jwtCheck, async (req, res) => {
   }
 });
 
+// validated user posting or editing schedule
+app.post('/api/schedule', jwtCheck, async (req, res) => {
+  try {
+    // frontend sends: cc_category, cc_rank, cc_frequency, cc_day
+
+    // if user tries to run Schedule route without going through sign up process (i.e. runs request through Postman), user does not exist in db
+    const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
+    if (users.length !== 1) {
+      return res.status(400).send(`No user with user ID ${req.auth.payload.sub}`);
+    }
+    if (users[0].validated === false) {
+      return res.status(400).send(`User with user ID ${req.auth.payload.sub} is not validated`);
+    }
+
+    // for simplicity, for now the user has to provide all fields *enforce in the frontend
+    // but users can still use Postman to send invalid inputs that are not allowed by frontend
+    // db will validate for me
+    await db.query("UPDATE users SET cc_category = $2, cc_rank = $3, cc_frequency = $4, cc_day = $5 WHERE user_id = $1", 
+    [req.auth.payload.sub, req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day]);
+    return res.status(200).json({...req.body, validated: true});
+  } catch (e) {
+    return res.status(400).json({e});
+  }
+});
 
 
 app.listen(PORT, () => {

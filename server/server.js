@@ -4,6 +4,7 @@ require('dotenv').config();
 const path = require('path');
 const db = require('./db/db-connection.js');
 const { auth } = require('express-oauth2-jwt-bearer');
+const cron = require('node-cron');
 
 const app = express();
 const REACT_BUILD_DIR = path.join(__dirname, "..", "client", "dist");
@@ -260,6 +261,13 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
   } catch (e) {
     return res.status(400).json({e});
   }
+});
+
+
+// scheduled job
+cron.schedule("*/5 * * * * *", function () {
+  console.log("---------------------");
+  console.log("running a task every 5 seconds");
 });
 
 

@@ -264,27 +264,43 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
 });
 
 
-// scheduled job that validates users + challenges every 10 min
+// scheduled job that validates users every 10 min
 cron.schedule("*/10 * * * *", async function () {
   console.log("---------------------");
   console.log("running a task every 10 min");
 
-  // query all users from users table where validated === false
-  // loop through returning users,
-    // call CW API List of CC
-    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${username}/code-challenges/completed`);
+  // check all users who aren't validated yet
+  const { rows: users } = await db.query("SELECT * FROM users WHERE validated = false");
+
+  for (const user of users) {
+    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
     const cw_data = await cw_response.json();
 
-    // if user has completed assigned test_challenge,
-      // if 10 min have not passed since test_created,
-        // set user to validated === true, show user Scheduling Page when they next log in
-      // otherwise, if 10 min have passed,
-        // delete user from db, show Sign Up component
-    // otherwise, if the user has not completed test challenge,
-      // if 10 min haven't passed yet since test_created,
-        // [keep] show[ing] user Validation Page
-      // if 10 min have passed,
-        // delete user from db, show Sign Up component
+    for (const challenge of cw_data.data) {
+      // if user has completed assigned test_challenge,
+      if (user.test_challenge === challenge.id) {
+        // if 10 min have not passed since test_created, set user to validated === true, show user Scheduling Page when they next log in
+        if (Date.now() - user.test_created <= 600000) {
+          await db.query("UPDATE users SET validated = true WHERE username = $1", [user]);
+          return;
+        // otherwise, if 10 min have passed, delete user from db, show user Sign Up component
+        } else {
+          await db.query("DELETE FROM users WHERE username = $1", [user]);
+          return;
+        }
+      // otherwise, if the user has not completed test challenge,
+      } else {
+        // if 10 min haven't passed yet since test_created, show user Validation Page
+        if (Date.now() - user.test_created <= 600000) {
+          return;
+        // if 10 min have passed, delete user from db, show user Sign Up component
+        } else {
+          await db.query("DELETE FROM users WHERE username = $1", [user]);
+          return;
+        }
+      }
+    }
+  }
 });
 
 // scheduled job that sends automated emails every 24 hrs

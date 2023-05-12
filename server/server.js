@@ -264,10 +264,22 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
 });
 
 
-// scheduled job
-cron.schedule("*/5 * * * * *", function () {
+// scheduled job that validates users every 10 min
+cron.schedule("*/10 * * * *", function () {
   console.log("---------------------");
-  console.log("running a task every 5 seconds");
+  console.log("running a task every 5 min");
+
+  // call CW API List of CC
+
+});
+
+// scheduled job that sends automated emails every 24 hrs
+cron.schedule("* */24 * * *", function () {
+  console.log("---------------------");
+  console.log("running a task every 10 min");
+
+  // copy code from Gmail API test proj
+
 });
 
 

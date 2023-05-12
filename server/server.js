@@ -264,22 +264,58 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
 });
 
 
-// scheduled job that validates users every 10 min
-cron.schedule("*/10 * * * *", function () {
-  console.log("---------------------");
-  console.log("running a task every 5 min");
-
-  // call CW API List of CC
-
-});
-
-// scheduled job that sends automated emails every 24 hrs
-cron.schedule("* */24 * * *", function () {
+// scheduled job that validates users + challenges every 10 min
+cron.schedule("*/10 * * * *", async function () {
   console.log("---------------------");
   console.log("running a task every 10 min");
 
+  // query all users from users table where validated === false
+  // loop through returning users,
+    // call CW API List of CC
+    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${username}/code-challenges/completed`);
+    const cw_data = await cw_response.json();
+
+    // if user has completed assigned test_challenge,
+      // if 10 min have not passed since test_created,
+        // set user to validated === true, show user Scheduling Page when they next log in
+      // otherwise, if 10 min have passed,
+        // delete user from db, show Sign Up component
+    // otherwise, if the user has not completed test challenge,
+      // if 10 min haven't passed yet since test_created,
+        // [keep] show[ing] user Validation Page
+      // if 10 min have passed,
+        // delete user from db, show Sign Up component
+});
+
+// scheduled job that sends automated emails every 24 hrs
+cron.schedule("0 0 * * *", function () {
+  console.log("---------------------");
+  console.log("running a task every 24 hrs");
+
   // copy code from Gmail API test proj
 
+
+  // query all users from users_code_challenges table where cc_state is "In Progress" (default)
+  // loop through returning users,
+    // call CW API
+
+    // if deadline hasn't passed yet,
+      // do nothing 
+    // otherwise, if deadline has passed,
+      // update cc_state to "Failed"
+    // otherwise, if user has completed assigned challenge within deadline,
+      // update cc_state to "Passed"
+
+
+  // query all users from users table where cc_category is not null (already required all cc preferences to be either all null or all not null)
+  // loop through returning users
+    // if cc_day === current day, 
+      // randomly assign users a cc from db that matches their preferences
+      // query if user id exists in users_code_challenges,
+        // update challenge id, cc_state to "In Progress", and deadline in db
+      // otherwise, user id doesn't exist,
+        // insert user id, challenge id, and deadline in db
+      // send user email containing link to cc
 });
 
 

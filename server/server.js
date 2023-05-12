@@ -207,10 +207,9 @@ app.post('/api/user', jwtCheck, async (req, res) => {
 
     let question_ids = questions.map(q => q.challenge);
     // console.log(question_ids);
-
     let done_ids = new Set(cw_data.data.map(q => q.id));
-
     let not_done_ids = question_ids.filter(q => !done_ids.has(q));
+
     let random_idx = Math.floor(Math.random() * not_done_ids.length);
     let random_question = not_done_ids[random_idx];
     let time_now = new Date();
@@ -219,8 +218,8 @@ app.post('/api/user', jwtCheck, async (req, res) => {
       `
       INSERT INTO users (user_id, username, email, test_challenge, test_created, name) 
       VALUES($1, $2, $3, $4, $5, $6);
-      `
-    , [req.auth.payload.sub, req.body.username, auth_data[0].email, random_question, time_now, auth_data[0].name]);
+      `,
+    [req.auth.payload.sub, req.body.username, auth_data[0].email, random_question, time_now, auth_data[0].name]);
 
     return res.status(200).json({
       test_challenge: random_question,
@@ -269,7 +268,7 @@ cron.schedule("*/10 * * * *", async function () {
   console.log("---------------------");
   console.log("running a task every 10 min");
 
-  // check all users who aren't validated yet
+  // check all users from users table who aren't validated yet
   const { rows: users } = await db.query("SELECT * FROM users WHERE validated = false");
 
   for (const user of users) {
@@ -308,30 +307,82 @@ cron.schedule("0 0 * * *", function () {
   console.log("---------------------");
   console.log("running a task every 24 hrs");
 
-  // copy code from Gmail API test proj
+  // check all users from users_code_challenges whose code challenges are "In Progress" (default)
+  const { rows: users } = await db.query("SELECT * FROM users_code_challenges WHERE cc_state = 'In Progress'");
 
+  for (const user of users) {
+    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
+    const cw_data = await cw_response.json();
+  
+    for (const challenge of cw_data.data) {
+      // if deadline hasn't passed yet, do nothing 
+      if (Date.now() <= user.deadline) {
+        return;
+      // otherwise, if deadline has passed, update cc_state to "Failed"
+      } else if (Date.now() > user.deadline) {
+        await db.query("UPDATE users SET cc_state = 'Failed' WHERE user_id = $1", [user.user_id]);
+        return;
+      // otherwise, if user has completed assigned challenge within deadline, update cc_state to "Passed"
+      } else if ((user.test_challenge === challenge.id) && (Date.now() <= user.deadline)) {
+        await db.query("UPDATE users SET cc_state = 'Passed' WHERE user_id = $1", [user.user_id]);
+        return;
+      }
+    }
+    
+  // check all users from users table where cc_category is not null (already required all cc preferences to be either all null or all not null)
+  const { rows: users } = await db.query("SELECT * FROM users_code_challenges WHERE cc_state = 'In Progress'");
 
-  // query all users from users_code_challenges table where cc_state is "In Progress" (default)
-  // loop through returning users,
-    // call CW API
+  for (const user of users) {
+    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
+    const cw_data = await cw_response.json();
 
-    // if deadline hasn't passed yet,
-      // do nothing 
-    // otherwise, if deadline has passed,
-      // update cc_state to "Failed"
-    // otherwise, if user has completed assigned challenge within deadline,
-      // update cc_state to "Passed"
+    const convertDay = {
+      Sunday: 0,
+      Monday: 1,
+      Tuesday: 2,
+      Wednesday: 3,
+      Thursday: 4,
+      Friday: 5,
+      Saturday: 6
+    };
+  
+    for (const challenge of cw_data.data) {
+      // if cc_day === current day of the week, randomly assign users a cc from db that matches their preferences
+      if (convertDay[user.cc_day] === new Date().getDay()) {
+        const { rows: questions } = await db.query(
+          `SELECT challenge FROM code_challenges WHERE category = $1, rank = $2`,
+        [user.cc_category, user.cc_rank]);
 
+        let question_ids = questions.map(q => q.challenge);
+        let done_ids = new Set(cw_data.data.map(q => q.id));
+        let not_done_ids = question_ids.filter(q => !done_ids.has(q));
 
-  // query all users from users table where cc_category is not null (already required all cc preferences to be either all null or all not null)
-  // loop through returning users
-    // if cc_day === current day, 
-      // randomly assign users a cc from db that matches their preferences
-      // query if user id exists in users_code_challenges,
-        // update challenge id, cc_state to "In Progress", and deadline in db
-      // otherwise, user id doesn't exist,
-        // insert user id, challenge id, and deadline in db
-      // send user email containing link to cc
+        let random_idx = Math.floor(Math.random() * not_done_ids.length);
+        let random_question = not_done_ids[random_idx];
+        let time_now = new Date();
+        let new_deadline = time_now.setDate(time_now.getDate() + 7);
+        
+
+        // check if user id exists in users_code_challenges
+        const { rows: users_cc } = await db.query("SELECT * FROM users_code_challenges WHERE user_id = $1", [user.user_id]);
+        
+        // if user id exists in users_code_challenges, update challenge id, cc_state to "In Progress" (default), and deadline in db
+        if (users_cc.length === 1) {
+          await db.query(
+            `UPDATE users_code_challenges SET challenge = $2, deadline = $3 WHERE user_id = $1`, 
+          [user.user_id, random_question, new_deadline]);
+        // otherwise, user id doesn't exist -- insert user id, challenge id, and deadline in db
+        } else {
+          await db.query(
+            `INSERT INTO users_code_challenges(challenge, deadline) VALUES ($2, $3) WHERE user_id = $1`, 
+          [user.user_id, random_question, new_deadline]);
+        }
+        // send user email containing link to cc *** copy code from Gmail API test proj
+        
+        
+      }
+    }
+  }
 });
 
 

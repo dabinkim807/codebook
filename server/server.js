@@ -249,14 +249,14 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
     // for simplicity, for now the user has to provide all fields *enforce in the frontend
       // but users can still use Postman to send invalid inputs that are not allowed by frontend
       // db will validate for me
-    let inputs = [req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day];
+    let inputs = [req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day, req.body.e_frequency, req.body.e_reminder];
     if (!(inputs.every(x => x === null) || inputs.every(x => x !== null))) {
     // same thing as !inputs.every(x => x === null) && !inputs.every(x => x !== null)
       return res.status(400).send("Inputs must either be all null or all not null");
     }
 
-    await db.query("UPDATE users SET cc_category = $2, cc_rank = $3, cc_frequency = $4, cc_day = $5 WHERE user_id = $1", 
-    [req.auth.payload.sub, req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day]);
+    await db.query("UPDATE users SET cc_category = $2, cc_rank = $3, cc_frequency = $4, cc_day = $5, e_frequency = $6, e_reminder = $7 WHERE user_id = $1", 
+    [req.auth.payload.sub, req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day, req.body.e_frequency, req.body.e_reminder]);
     return res.status(200).json({...req.body, validated: true});
   } catch (e) {
     return res.status(400).json({e});
@@ -266,47 +266,51 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
 
 // scheduled job that validates users every 10 min
 // cron.schedule("*/10 * * * *", async function () {
-//   console.log("---------------------");
-//   console.log("running a task every 10 min");
+cron.schedule("* * * * *", async function () {
+  console.log("---------------------");
+  // console.log("running a task every 10 min");
+  console.log("running a task every minute");
 
-//   // check all users from users table who aren't validated yet
-//   const { rows: users } = await db.query("SELECT * FROM users WHERE validated = false");
+  // check all users from users table who aren't validated yet
+  const { rows: users } = await db.query("SELECT * FROM users WHERE validated = false");
 
-//   for (const user of users) {
-//     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
-//     const cw_data = await cw_response.json();
+  for (const user of users) {
+    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
+    const cw_data = await cw_response.json();
 
-//     for (const challenge of cw_data.data) {
-//       // if user has completed assigned test_challenge,
-//       if (user.test_challenge === challenge.id) {
-//         // if 10 min have not passed since test_created, set user to validated === true, show user Scheduling Page when they next log in
-//         if (Date.now() - user.test_created <= 600000) {
-//           await db.query("UPDATE users SET validated = true WHERE username = $1", [user]);
-//           return;
-//         // otherwise, if 10 min have passed, delete user from db, show user Sign Up component
-//         } else {
-//           await db.query("DELETE FROM users WHERE username = $1", [user]);
-//           return;
-//         }
-//       // otherwise, if the user has not completed test challenge,
-//       } else {
-//         // if 10 min haven't passed yet since test_created, show user Validation Page
-//         if (Date.now() - user.test_created <= 600000) {
-//           return;
-//         // if 10 min have passed, delete user from db, show user Sign Up component
-//         } else {
-//           await db.query("DELETE FROM users WHERE username = $1", [user]);
-//           return;
-//         }
-//       }
-//     }
-//   }
-// });
+    for (const challenge of cw_data.data) {
+      // if user has completed assigned test_challenge,
+      if (user.test_challenge === challenge.id) {
+        // if 10 min have not passed since test_created, set user to validated === true, show user Scheduling Page when they next log in
+        if (Date.now() - user.test_created <= 600000) {
+          await db.query("UPDATE users SET validated = true WHERE username = $1", [user]);
+          return;
+        // otherwise, if 10 min have passed, delete user from db, show user Sign Up component
+        } else {
+          await db.query("DELETE FROM users WHERE username = $1", [user]);
+          return;
+        }
+      // otherwise, if the user has not completed test challenge,
+      } else {
+        // if 10 min haven't passed yet since test_created, show user Validation Page
+        if (Date.now() - user.test_created <= 600000) {
+          return;
+        // if 10 min have passed, delete user from db, show user Sign Up component
+        } else {
+          await db.query("DELETE FROM users WHERE username = $1", [user]);
+          return;
+        }
+      }
+    }
+  }
+});
 
 // scheduled job that sends automated emails every 24 hrs
-// cron.schedule("0 0 * * *", async function () {
+// // cron.schedule("0 0 * * *", async function () {
+// cron.schedule("* * * * *", async function () {
 //   console.log("---------------------");
-//   console.log("running a task every 24 hrs");
+//   // console.log("running a task every 24 hrs");
+//   console.log("running a task every minute");
 
 //   // check all users from users_code_challenges whose code challenges are "In Progress" (default)
 //   const { rows: users } = await db.query("SELECT * FROM users_code_challenges WHERE cc_state = 'In Progress'");
@@ -378,7 +382,7 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
 //             `INSERT INTO users_code_challenges(challenge, deadline) VALUES ($2, $3) WHERE user_id = $1`, 
 //           [user.user_id, random_question, new_deadline]);
 //         }
-//         // send user email containing link to cc *** copy code from Gmail API test proj
+//         // send user email containing link to code challenge
 //         const main = async () => {
 //           const options = {
 //             to: 'techtonica.codebook@gmail.com',
@@ -401,26 +405,26 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
 //   }
 // });
 
-cron.schedule("1 * * * *", async function () {
-  console.log("---------------------");
-  console.log("running a task every minute");
-  const main = async () => {
-    const options = {
-      to: 'techtonica.codebook@gmail.com',
-      replyTo: 'techtonica.codebook@gmail.com',
-      subject: 'Hello Techtonica',
-      text: 'This email is sent from the command line!',
-      textEncoding: 'base64',
-    };
+// cron.schedule("1 * * * *", async function () {
+//   console.log("---------------------");
+//   console.log("running a task every minute");
+//   const main = async () => {
+//     const options = {
+//       to: 'techtonica.codebook@gmail.com',
+//       replyTo: 'techtonica.codebook@gmail.com',
+//       subject: 'Hello Techtonica',
+//       text: 'This email is sent from the command line!',
+//       textEncoding: 'base64',
+//     };
   
-    const messageId = await sendMail(options);
-    return messageId;
-  };
+//     const messageId = await sendMail(options);
+//     return messageId;
+//   };
   
-  main()
-    .then((messageId) => console.log('Message sent successfully:', messageId))
-    .catch((err) => console.error(err));
-});
+//   main()
+//     .then((messageId) => console.log('Message sent successfully:', messageId))
+//     .catch((err) => console.error(err));
+// });
 
 
 app.listen(PORT, () => {

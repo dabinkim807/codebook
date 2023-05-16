@@ -42,20 +42,20 @@ app.get('/unauthorized', (req, res) => {
 app.get('/api/user', jwtCheck, async (req, res) => {
   try {
     const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
-    
+
     // if user is not in db, validated === false
-      // show user Sign Up component
+    // show user Sign Up component
     if (users.length !== 1) {
-      return res.status(200).json({validated: false});
+      return res.status(200).json({ validated: false });
     }
 
     // if user is validated, validated === true
-      // show Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
+    // show Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
     if (users[0].validated) {
       return res.status(200).json({
         cc_category: users[0].cc_category,
         cc_rank: users[0].cc_rank,
-        cc_frequency: users[0].cc_frequency, 
+        cc_frequency: users[0].cc_frequency,
         cc_day: users[0].cc_day,
         validated: true
       });
@@ -65,16 +65,16 @@ app.get('/api/user', jwtCheck, async (req, res) => {
     // call CW API, check test_challenge is fully passed (completed within time limit)
     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
     const cw_data = await cw_response.json();
-      
+
     for (const challenge of cw_data.data) {
       // if user completed test within time limit, set validated === true, 
-        // send user to Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
+      // send user to Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
       if ((users[0].test_challenge === challenge.id) && (Date.parse(challenge.completedAt) - users[0].test_created <= 600000)) {
         await db.query("UPDATE users SET validated = true WHERE user_id = $1", [req.auth.payload.sub]);
         return res.status(200).json({
           cc_category: users[0].cc_category,
           cc_rank: users[0].cc_rank,
-          cc_frequency: users[0].cc_frequency, 
+          cc_frequency: users[0].cc_frequency,
           cc_day: users[0].cc_day,
           validated: true
         });
@@ -82,19 +82,19 @@ app.get('/api/user', jwtCheck, async (req, res) => {
     }
 
     // if test is not completed and 10 min hasn't passed yet,
-      // re-send user the same test and keep them on Validation Page
+    // re-send user the same test and keep them on Validation Page
     if (Date.now() - users[0].test_created <= 600000) {
       return res.status(200).json({
-        test_challenge: users[0].test_challenge, 
+        test_challenge: users[0].test_challenge,
         test_created: users[0].test_created,
         validated: false
       });
     }
-  
+
     // if user has not passed test and 10 min have passed, validated === false
-      // delete user from db and send them back to Sign Up component
+    // delete user from db and send them back to Sign Up component
     await db.query("DELETE FROM users WHERE user_id = $1", [req.auth.payload.sub]);
-    res.status(200).json({validated: false});
+    res.status(200).json({ validated: false });
   } catch (e) {
     return res.status(400).json({ e });
   }
@@ -110,50 +110,50 @@ app.get('/api/done', jwtCheck, async (req, res) => {
       return res.status(400).send(`No user with user ID ${req.auth.payload.sub}`);
     }
     // if scheduled job runs before user clicks Done button, validated === true in db
-      // send user to Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
+    // send user to Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
     if (users[0].validated) {
       return res.status(200).json({
         cc_category: users[0].cc_category,
         cc_rank: users[0].cc_rank,
-        cc_frequency: users[0].cc_frequency, 
+        cc_frequency: users[0].cc_frequency,
         cc_day: users[0].cc_day,
         validated: true
       });
     }
-    
+
     // stretch goal: to handle multiple pages of results, create a function that calls API for length of pages
     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
     const cw_data = await cw_response.json();
 
     for (const challenge of cw_data.data) {
       // if user completed test within time limit, set validated === true, 
-        // send user to Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
+      // send user to Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
       if ((users[0].test_challenge === challenge.id) && (Date.parse(challenge.completedAt) - users[0].test_created <= 600000)) {
         await db.query("UPDATE users SET validated = true WHERE user_id = $1", [req.auth.payload.sub]);
         return res.status(200).json({
           cc_category: users[0].cc_category,
           cc_rank: users[0].cc_rank,
-          cc_frequency: users[0].cc_frequency, 
+          cc_frequency: users[0].cc_frequency,
           cc_day: users[0].cc_day,
           validated: true
         });
       }
     }
-    
+
     // if user clicks Done and test is not completed and 10 min hasn't passed yet,
-      // re-send user the same test and keep them on Validation Page
+    // re-send user the same test and keep them on Validation Page
     if (Date.now() - users[0].test_created <= 600000) {
       return res.status(200).json({
-        test_challenge: users[0].test_challenge, 
+        test_challenge: users[0].test_challenge,
         test_created: users[0].test_created,
         validated: false
       });
     }
 
     // if user has not passed test and 10 min have passed, validated === false
-      // delete user from db and send them back to Sign Up component
+    // delete user from db and send them back to Sign Up component
     await db.query("DELETE FROM users WHERE user_id = $1", [req.auth.payload.sub]);
-    res.status(200).json({validated: false});
+    res.status(200).json({ validated: false });
   } catch (e) {
     return res.status(400).json({ e });
   }
@@ -184,7 +184,7 @@ app.post('/api/user', jwtCheck, async (req, res) => {
     //   keep user at Sign Up component
     // otherwise cw_data.success === undefined
     if (cw_data.success === false) {
-      return res.status(200).json({validated: false});
+      return res.status(200).json({ validated: false });
     }
 
     //// call Auth0 API
@@ -214,13 +214,13 @@ app.post('/api/user', jwtCheck, async (req, res) => {
     let random_idx = Math.floor(Math.random() * not_done_ids.length);
     let random_question = not_done_ids[random_idx];
     let time_now = new Date();
-    
+
     await db.query(
       `
       INSERT INTO users (user_id, username, email, test_challenge, test_created, name) 
       VALUES($1, $2, $3, $4, $5, $6);
       `,
-    [req.auth.payload.sub, req.body.username, auth_data[0].email, random_question, time_now, auth_data[0].name]);
+      [req.auth.payload.sub, req.body.username, auth_data[0].email, random_question, time_now, auth_data[0].name]);
 
     return res.status(200).json({
       test_challenge: random_question,
@@ -228,7 +228,7 @@ app.post('/api/user', jwtCheck, async (req, res) => {
       validated: false
     });
   } catch (e) {
-    return res.status(400).json({e});
+    return res.status(400).json({ e });
   }
 });
 
@@ -247,19 +247,19 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
     }
 
     // for simplicity, for now the user has to provide all fields *enforce in the frontend
-      // but users can still use Postman to send invalid inputs that are not allowed by frontend
-      // db will validate for me
+    // but users can still use Postman to send invalid inputs that are not allowed by frontend
+    // db will validate for me
     let inputs = [req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day, req.body.e_frequency, req.body.e_reminder];
     if (!(inputs.every(x => x === null) || inputs.every(x => x !== null))) {
-    // same thing as !inputs.every(x => x === null) && !inputs.every(x => x !== null)
+      // same thing as !inputs.every(x => x === null) && !inputs.every(x => x !== null)
       return res.status(400).send("Inputs must either be all null or all not null");
     }
 
-    await db.query("UPDATE users SET cc_category = $2, cc_rank = $3, cc_frequency = $4, cc_day = $5, e_frequency = $6, e_reminder = $7 WHERE user_id = $1", 
-    [req.auth.payload.sub, req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day, req.body.e_frequency, req.body.e_reminder]);
-    return res.status(200).json({...req.body, validated: true});
+    await db.query("UPDATE users SET cc_category = $2, cc_rank = $3, cc_frequency = $4, cc_day = $5, e_frequency = $6, e_reminder = $7 WHERE user_id = $1",
+      [req.auth.payload.sub, req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day, req.body.e_frequency, req.body.e_reminder]);
+    return res.status(200).json({ ...req.body, validated: true });
   } catch (e) {
-    return res.status(400).json({e});
+    return res.status(400).json({ e });
   }
 });
 
@@ -322,19 +322,19 @@ cron.schedule("* * * * *", async function () {
         // if user has completed assigned code challenge by the deadline, set challenge to passed
         if (Date.parse(challenge.completedAt) <= user_cc.deadline) {
           await db.query("UPDATE users SET cc_state = 'Passed' WHERE user_id = $1", [user_cc.user_id]);
-        // otherwise, set challenge to failed
+          // otherwise, set challenge to failed
         } else {
           await db.query("UPDATE users SET cc_state = 'Failed' WHERE user_id = $1", [user_cc.user_id]);
         }
         break;
-      } 
+      }
     }
     // if user has not completed assigned code challenge and the deadline has passed, set challenge to failed
     if (!matched && Date.now() > user_cc.deadline) {
       await db.query("UPDATE users SET cc_state = 'Failed' WHERE user_id = $1", [user_cc.user_id]);
     }
   }
-  
+
   // check all users from users table where cc_category is not null (already required all cc preferences to be either all null or all not null)
   const { rows: users } = await db.query("SELECT * FROM users WHERE cc_category IS NOT NULL");
 
@@ -358,68 +358,55 @@ cron.schedule("* * * * *", async function () {
     };
 
     console.log(cw_data.data)
-    
+
     console.log(convertDay[user.cc_day])
     console.log(new Date().getDay())
     console.log(convertDay[user.cc_day] === new Date().getDay())
-  
-    for (const challenge of cw_data.data) {
-      console.log(challenge)
-      // if cc_day === current day of the week, randomly assign users a cc from db that matches their preferences
-      if (convertDay[user.cc_day] === new Date().getDay()) {
-        console.log("--------inside first if statement------------")
-        const { rows: questions } = await db.query(
-          'SELECT challenge FROM code_challenges WHERE category = $1 AND rank = $2', 
+
+    // if cc_day === current day of the week, randomly assign users a cc from db that matches their preferences
+    if (convertDay[user.cc_day] === new Date().getDay()) {
+      console.log("--------inside first if statement------------")
+      const { rows: questions } = await db.query(
+        'SELECT challenge FROM code_challenges WHERE category = $1 AND rank = $2',
         [user.cc_category, user.cc_rank]);
 
-        console.log(questions)
+      console.log(questions)
 
-        let question_ids = questions.map(q => q.challenge);
-        let done_ids = new Set(cw_data.data.map(q => q.id));
-        let not_done_ids = question_ids.filter(q => !done_ids.has(q));
+      let question_ids = questions.map(q => q.challenge);
+      let done_ids = new Set(cw_data.data.map(q => q.id));
+      let not_done_ids = question_ids.filter(q => !done_ids.has(q));
 
-        let random_idx = Math.floor(Math.random() * not_done_ids.length);
-        let random_question = not_done_ids[random_idx];
-        let time_now = new Date();
-        let new_deadline = time_now.setDate(time_now.getDate() + 7);
-        
-        console.log(random_question)
-        console.log(new_deadline)
+      let random_idx = Math.floor(Math.random() * not_done_ids.length);
+      let random_question = not_done_ids[random_idx];
+      let new_deadline = new Date();
+      new_deadline.setDate(new_deadline.getDate() + 7);
 
-        // check if user id exists in users_code_challenges
-        const { rows: users_cc_id } = await db.query("SELECT * FROM users_code_challenges WHERE user_id = $1", [user.user_id]);
+      console.log(random_question)
+      console.log(new_deadline)
 
-        console.log(users_cc_id)
-        
-        // if user id exists in users_code_challenges, update challenge id, cc_state to "In Progress" (default), and deadline in db
-        if (users_cc_id.length === 1) {
-          await db.query(
-            `UPDATE users_code_challenges SET challenge = $2, deadline = $3 WHERE user_id = $1`, 
-          [user.user_id, random_question, new_deadline]);
-        // otherwise, user id doesn't exist -- insert user id, challenge id, and deadline in db
-        } else {
-          await db.query(
-            `INSERT INTO users_code_challenges(user_id, challenge, deadline) VALUES ($1, $2, $3)`, 
-          [user.user_id, random_question, new_deadline]);
-        }
-        // send user email containing link to code challenge
-        const main = async () => {
-          const options = {
-            to: 'techtonica.codebook@gmail.com',
-            replyTo: 'techtonica.codebook@gmail.com',
-            subject: 'Hello Techtonica',
-            text: 'This email is sent from the command line!',
-            textEncoding: 'base64',
-          };
-        
-          const messageId = await sendMail(options);
-          return messageId;
+
+      // insert challenge id, cc_state to "In Progress" (default), and deadline in db
+      await db.query(
+        `INSERT INTO users_code_challenges(user_id, challenge, deadline) VALUES ($1, $2, $3)`,
+        [user.user_id, random_question, new_deadline]);
+
+      // send user email containing link to code challenge
+      const main = async () => {
+        const options = {
+          to: 'techtonica.codebook@gmail.com',
+          replyTo: 'techtonica.codebook@gmail.com',
+          subject: 'CodeBook Code Challenge',
+          text: `New coding challenge! Link is https://www.codewars.com/kata/${random_question}`,
+          textEncoding: 'base64',
         };
-        
-        main()
-          .then((messageId) => console.log('Message sent successfully:', messageId))
-          .catch((err) => console.error(err));
-      }
+
+        const messageId = await sendMail(options);
+        return messageId;
+      };
+
+      main()
+        .then((messageId) => console.log('Message sent successfully:', messageId))
+        .catch((err) => console.error(err));
     }
   }
 });
@@ -435,11 +422,11 @@ cron.schedule("1 * * * *", async function () {
       text: 'This email is sent from the command line!',
       textEncoding: 'base64',
     };
-  
+
     const messageId = await sendMail(options);
     return messageId;
   };
-  
+
   main()
     .then((messageId) => console.log('Message sent successfully:', messageId))
     .catch((err) => console.error(err));

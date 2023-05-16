@@ -75,6 +75,7 @@ function App() {
 
       <Profile />
       {isAuthenticated ? (idExists ? (<Schedule />) : (<Signup currentUser={currentUser} setCurrentUser={setCurrentUser} />)) : <></>} */}
+      {/* {currentUser.test_challenge !== null ? (<Validation currentUser={currentUser} />) : (<Signup />)} */}
     </div>
   )
 }

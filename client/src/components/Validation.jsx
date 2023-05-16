@@ -1,6 +1,7 @@
 import React from "react";
 
-function Validation() {
+function Validation(props) {
+  // currentUser={currentUser}
 
   return (
     <div className="Validation">
@@ -8,8 +9,7 @@ function Validation() {
       <p>Thank you for signing up to CodeBook!</p> 
       <p>To confirm your account, please complete the Codewars challenge below within 10 minutes.</p>
       <p>Click on the "DONE" button once you've passed the challenge!</p>
-      {/* `https://www.codewars.com/kata/${user.test_challenge}` */}
-      <a href="">Code Challenge</a>
+      <a href={"https://www.codewars.com/kata/" + props.currentUser.test_challenge}>Code Challenge</a>
       <button type="submit" onClick={handleDone}>Done</button>
     </div>
   )

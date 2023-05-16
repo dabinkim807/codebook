@@ -1,25 +1,149 @@
 # CodeBook
 
+
+## Table of Contents
+* [Introduction](#introduction)
+* [Installation](#installation)
+<!-- * [User Flow](#user-flow) -->
+<!-- * [Database Schema](#database-schema) -->
+* [System Design](#system-design)
+<!-- * [Wireframes](#wireframes) -->
+* [Design Considerations](#design-considerations)
+* [Alternatives](#alternatives)
+* [Technologies](#technologies)
+* [Features](#features)
+* [Status](#status)
+
+
 ## Introduction
-CodeBook is an interview prep accountability tool that prepares users for software engineering coding interviews. Based on users' preferences, the app will send automated emails containing code challenges and/or reminders to solve code challenges to users. 
+CodeBook is an interview prep accountability tool that prepares users for software engineering coding interviews. 
+
+Users will sign-up through Auth0 and provide their Codewars username to the app. Before they can use the app's main features, users must pass validation and prove that they are truly the rightful owner of the Codewars account. 
+
+Once a user has been validated, they can choose their code challenge and email preferences. According to the user's preferences, the app will send the user automated emails containing links to code challenges and/or reminders to complete their challenges.
 
 This app does not provide an environment in which users can solve coding challenges.
+
+
+## Installation
+__This project requires Auth0! Please visit [Auth0](https://auth0.com/) to make an account and retrieve a domain and client ID. See .env.example for set up!__
+
+Step 1: Clone project & switch into the project directory.
+
+```
+git clone git@github.com:dabinkim807/codebook.git
+cd codebook
+```
+  
+Step 2: Install all packages.
+
+```
+cd client && npm install && cd ../server && npm install
+```
+
+Step 3: Setup Environment Variables
+
+* Copy the instructions from both .env.example files in the client and server.
+
+Step 4: Connect the database and the data.
+
+```
+cd server
+psql postgres -f db.sql
+```
+
+Step 5: Start the program!
+
+Method 1: Have two servers running at the same time.
+
+```
+cd client && npm start
+// open a new terminal
+cd server && npm start
+```
+
+Method 2: Have just one server running.
+
+```
+cd client && npm run build
+cd server && npm run start
+```
+
+Note: Client server will be running on http://localhost:5173 and server will be running on http://localhost:8080.
+
+
+<!-- ## User Flow
+![User Flow](./images/user-flow.jpg) -->
+
+
+<!-- ## Database Schema
+![Database Schema](./images/db-schema.jpg) -->
+
+
+## System Design
+
+### Set-up & Validation
+1. The user will open the app and see a landing page where they are prompted to sign-in.
+2. The user will sign-in through Auth0, which will currently only provide the option to connect to Google accounts, due to the project's scope limitations. If they are a new user, they will be directed to the validation page. If they are a returning user, they will be directed to the scheduling page.
+3. On the validation page, the user will be prompted to either create a Codewars account if they do not have one already and/or submit their existing Codewars username to the app via a submit button.
+4. The backend will first validate the submitted username against existing users in the users table. If the user does not exist in the database, the backend will then validate the user against existing users in Codewars by calling the Codewars API and fetching user data.
+5. Codewars provides a Users API and Code Challenges API. To get user data and a list of a user's total completed code challenges, a username will be passed as parameter in the HTTP request. To get all code challenge data, a code challenge ID will be passed as parameter in the HTTP request.
+6. Once the user has submitted their Codewars username, the app will make a call to Codewars' Users API to access the user's total completed code challenges.
+7. The app will select a random, beginner-level, hard-coded code challenge from the database and check that the code challenge ID does not exist in the user's total completed code challenges.
+8. The validation page will then prompt the user to complete the challenge via an external link to Codewars. The purpose of this test is to validate that the user is truly the rightful owner of the Codewars username they have submitted.
+9. To limit the possibility of the user cheating (getting the true owner of the Codewars account to solve the problem for them), a time limit of 10 minutes will be enforced from the moment the user clicks on the submit button.
+10. Once the time limit has passed, the backend will call the Users API again to verify whether the user's list of total completed challenges has been updated to include the test.
+11. If the user's list of total completed challenges is updated successfully, the user is most likely valid. The user will be marked as validated and will then be able to access the app's scheduling page.
+12. If at any point between steps 6-12 the user is invalid or they have failed to pass the test within the designated time limit, the user will be left as not validated and will be prompted to resubmit their Codewars username and restart the validation process.
+    1. Since the first step in the validation process is to check whether the user is an existing user in the database, a user who has failed the validation process will be treated like a new user.
+    2. Users can make an unlimited amount of sign-up attempts.
+    3. A scheduled job will periodically delete any users who are not validated and who have exceeded the 10-minute deadline to complete the test
+
+### Scheduling Code Challenges
+1. On the scheduling page, the user will be able to choose the difficulty level and topic of their code challenges and how frequently they will be received (e.g. one code challenge per week for 1 month).
+2. The user will also be able to opt into receiving reminder emails to solve their code challenges, and if so, how often they would like to be reminded.
+3. All user preferences will be stored in the database. A scheduled job will do the following:
+    1. Randomly select a code challenge that matches the user's preferences and is not currently in their list of total completed challenges.
+    2. Send the user emails with links to their code challenges, based on the user's preferences.
+    3. Send the user reminder emails based on the user's preferences.
+    4. Mark user's assigned code challenge as passed if user completes challenge successfully within the deadline or failed if the user has not completed the challenge successfully by the deadline.
+
+
+<!-- ## Wireframes
+![Wireframes](./images/wireframes.jpg) -->
+
+
+## Design Considerations
+
+### Assumptions and Dependencies
+* For its functionality, the project depends heavily on the following external APIs: [Auth0](https://auth0.com/), [Codewars](https://dev.codewars.com/#list-completed-challenges), and [Gmail](https://developers.google.com/gmail/api/guides). The assumption is that these APIs will not become deprecated in the near future.
+* The project relies on a personal Gmail account with a limited number of emails that can be sent (2,000 per day). This dependency assumes that the project will not be popular enough to exceed that limitation.
+
+### General Constraints
+* Resources - the app depends on free resources, and must be fully completed within 4 weeks
+* Technologies/Stack - the app must be completed using the PERN stack (PostgreSQL, Express.js, React.js, Node.js)
+* [Guidelines](https://docs.google.com/document/d/1pv1TujurbSVVrZJzQSojTMEi3OIHWhnQUlnZoBRp7G0/edit)
+
+
+## Alternatives
+
+### LeetCode
+* Much more straightforward in terms of questions, ranking system, and UI
+* Used frequently in job interviews
+* Questions are regulated; only LeetCode admin can create questions
+* Overall, LeetCode is much better at preparing people for job interviews, which is the goal of this app
+
+So why was Codewars chosen instead?
+* LeetCode doesn’t have its own API – there are unofficial repositories of LeetCode challenges, and hard-coding is always an option, but:
+* One of the requirements of this project was to use an API whose data will be consumed by the app
+
 
 ## Technologies
 * Node.js v19.2.0
 * PostgreSQL v14.7 (Homebrew)
-* Vite
+* Express.js v4.18.2
+* Vite v4.2.0
 
-## Setup
-To run this project, install it locally using npm:
-
-```
-$ cd client
-$ npm install
-$ cd .. && cd server
-$ npm install
-$ npm run dev
-```
 
 ## Features
 * Choose code challenge category, difficulty, and frequency
@@ -28,6 +152,7 @@ $ npm run dev
 To Do:
 * Add friends and join classes
 * See your friends' and classmates' progress!
+
 
 ## Status
 Currently in development.

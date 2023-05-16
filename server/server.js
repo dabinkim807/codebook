@@ -301,11 +301,9 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
 // });
 
 // scheduled job that sends automated emails every 24 hrs
-// cron.schedule("0 0 * * *", async function () {
-cron.schedule("* * * * *", async function () {
+cron.schedule("0 0 * * *", async function () {
   console.log("---------------------");
-  // console.log("running a task every 24 hrs");
-  console.log("running a task every minute");
+  console.log("running a task every 24 hrs");
 
   // check all users from users_code_challenges whose code challenges are "In Progress" (default)
   const { rows: users_cc_state } = await db.query(
@@ -387,9 +385,6 @@ cron.schedule("* * * * *", async function () {
 
     // if cc_day === current day of the week, randomly assign users a cc from db that matches their preferences
     if (convertDay[user.cc_day] === new Date().getDay()) {
-
-      console.log("today is the day of cc_day");
-
       const { rows: questions } = await db.query(
         'SELECT challenge FROM code_challenges WHERE category = $1 AND rank = $2',
       [user.cc_category, user.cc_rank]);
@@ -411,10 +406,10 @@ cron.schedule("* * * * *", async function () {
       // send user email containing link to code challenge
       const main = async () => {
         const options = {
-          to: 'techtonica.codebook@gmail.com',
+          to: `${user.email}`,
           replyTo: 'techtonica.codebook@gmail.com',
           subject: 'CodeBook Code Challenge',
-          text: `New coding challenge! Link is https://www.codewars.com/kata/${random_question}`,
+          text: `New coding challenge! Link to challenge: https://www.codewars.com/kata/${random_question}`,
           textEncoding: 'base64',
         };
 
@@ -429,10 +424,6 @@ cron.schedule("* * * * *", async function () {
 
     // if cc_day !== current day of the week and user is opted into reminders, send user reminder based on e_frequency (currently only 'Once a day, every day')
     } else if (user.e_reminder === true) {
-
-      console.log(user); 
-      console.log("today is not the day of cc_day");
-
       const main = async () => {
         const options = {
           to: `${user.email}`,

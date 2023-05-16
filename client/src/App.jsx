@@ -74,7 +74,7 @@ function App() {
       {/* {!isAuthenticated ? (<LoginButton />) : (<LogoutButton />)}
 
       <Profile />
-      {isAuthenticated ? (idExists ? (<Schedule />) : (<Signup user={currentUser} />)) : <></>} */}
+      {isAuthenticated ? (idExists ? (<Schedule />) : (<Signup currentUser={currentUser} setCurrentUser={setCurrentUser} />)) : <></>} */}
     </div>
   )
 }

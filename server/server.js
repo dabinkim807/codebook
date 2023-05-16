@@ -265,45 +265,47 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
 
 
 // scheduled job that validates users every 10 min
-cron.schedule("*/10 * * * *", async function () {
-  console.log("---------------------");
-  console.log("running a task every 10 min");
+// cron.schedule("*/10 * * * *", async function () {
+//   console.log("---------------------");
+//   console.log("running a task every 10 min");
 
-  // check all users from users table who aren't validated yet
-  const { rows: users } = await db.query("SELECT * FROM users WHERE validated = false");
+//   // check all users from users table who aren't validated yet
+//   const { rows: users } = await db.query("SELECT * FROM users WHERE validated = false");
 
-  for (const user of users) {
-    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
-    const cw_data = await cw_response.json();
+//   for (const user of users) {
+//     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
+//     const cw_data = await cw_response.json();
 
-    for (const challenge of cw_data.data) {
-      // if user has completed assigned test_challenge,
-      if (user.test_challenge === challenge.id) {
-        // if 10 min have not passed since test_created, set user to validated === true, show user Scheduling Page when they next log in
-        if (Date.parse(challenge.completedAt) - user.test_created <= 600000) {
-          await db.query("UPDATE users SET validated = true WHERE user_id = $1", [user.user_id]);
-          return;
-        // otherwise, if 10 min have passed, delete user from db, show user Sign Up component
-        } else {
-          await db.query("DELETE FROM users WHERE user_id = $1", [user.user_id]);
-          return;
-        }
-      } 
-    }
-    // otherwise, if the user has not completed test challenge,
-    // if 10 min have passed, delete user from db, show user Sign Up component
-    if (Date.now() - user.test_created > 600000) {
-      await db.query("DELETE FROM users WHERE user_id = $1", [user.user_id]);
-      return;
-    } 
-    // if 10 min haven't passed yet since test_created, do nothing / show user Validation Page
-  }
-});
+//     for (const challenge of cw_data.data) {
+//       // if user has completed assigned test_challenge,
+//       if (user.test_challenge === challenge.id) {
+//         // if 10 min have not passed since test_created, set user to validated === true, show user Scheduling Page when they next log in
+//         if (Date.parse(challenge.completedAt) - user.test_created <= 600000) {
+//           await db.query("UPDATE users SET validated = true WHERE user_id = $1", [user.user_id]);
+//           return;
+//         // otherwise, if 10 min have passed, delete user from db, show user Sign Up component
+//         } else {
+//           await db.query("DELETE FROM users WHERE user_id = $1", [user.user_id]);
+//           return;
+//         }
+//       } 
+//     }
+//     // otherwise, if the user has not completed test challenge,
+//     // if 10 min have passed, delete user from db, show user Sign Up component
+//     if (Date.now() - user.test_created > 600000) {
+//       await db.query("DELETE FROM users WHERE user_id = $1", [user.user_id]);
+//       return;
+//     } 
+//     // if 10 min haven't passed yet since test_created, do nothing / show user Validation Page
+//   }
+// });
 
 // scheduled job that sends automated emails every 24 hrs
-cron.schedule("0 0 * * *", async function () {
+// cron.schedule("0 0 * * *", async function () {
+cron.schedule("* * * * *", async function () {
   console.log("---------------------");
-  console.log("running a task every 24 hrs");
+  // console.log("running a task every 24 hrs");
+  console.log("running a task every minute");
 
   // check all users from users_code_challenges whose code challenges are "In Progress" (default)
   const { rows: users_cc_state } = await db.query(
@@ -313,7 +315,8 @@ cron.schedule("0 0 * * *", async function () {
       ucc.challenge,
       ucc.cc_state,
       ucc.deadline,
-      u.username
+      u.username,
+      u.email
     FROM 
       users_code_challenges ucc
       JOIN users u ON ucc.user_id = u.user_id
@@ -347,7 +350,26 @@ cron.schedule("0 0 * * *", async function () {
   }
 
   // check all users from users table where cc_category is not null (already required all cc preferences to be either all null or all not null)
-  const { rows: users } = await db.query("SELECT * FROM users WHERE cc_category IS NOT NULL");
+  const { rows: users } = await db.query(
+    `
+    SELECT 
+      u.user_id,
+      u.username,
+      u.email,
+      u.cc_category,
+      u.cc_rank,
+      u.cc_frequency,
+      u.cc_day,
+      u.name,
+      u.e_frequency,
+      u.e_reminder,
+      ucc.challenge
+    FROM 
+      users u
+      JOIN users_code_challenges ucc ON ucc.user_id = u.user_id
+    WHERE cc_category IS NOT NULL
+    `
+  );
 
   for (const user of users) {
     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
@@ -365,6 +387,9 @@ cron.schedule("0 0 * * *", async function () {
 
     // if cc_day === current day of the week, randomly assign users a cc from db that matches their preferences
     if (convertDay[user.cc_day] === new Date().getDay()) {
+
+      console.log("today is the day of cc_day");
+
       const { rows: questions } = await db.query(
         'SELECT challenge FROM code_challenges WHERE category = $1 AND rank = $2',
       [user.cc_category, user.cc_rank]);
@@ -390,6 +415,30 @@ cron.schedule("0 0 * * *", async function () {
           replyTo: 'techtonica.codebook@gmail.com',
           subject: 'CodeBook Code Challenge',
           text: `New coding challenge! Link is https://www.codewars.com/kata/${random_question}`,
+          textEncoding: 'base64',
+        };
+
+        const messageId = await sendMail(options);
+        return messageId;
+      };
+
+      main()
+        .then((messageId) => console.log('Message sent successfully:', messageId))
+        .catch((err) => console.error(err));
+      
+
+    // if cc_day !== current day of the week and user is opted into reminders, send user reminder based on e_frequency (currently only 'Once a day, every day')
+    } else if (user.e_reminder === true) {
+
+      console.log(user); 
+      console.log("today is not the day of cc_day");
+
+      const main = async () => {
+        const options = {
+          to: `${user.email}`,
+          replyTo: 'techtonica.codebook@gmail.com',
+          subject: 'REMINDER: Complete your scheduled code challenge',
+          text: `Don't forget to solve your code challenge! Link to challenge: https://www.codewars.com/kata/${user.challenge}`,
           textEncoding: 'base64',
         };
 

@@ -47,6 +47,7 @@ function App() {
 //   const { user, isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
 
 //   const [idExists, setIdExists] = useState(false);
+  const [currentUser, setCurrentUser] = useState();
 
 //   const getRequest = async () => {
 //     if (user) {
@@ -73,7 +74,7 @@ function App() {
       {/* {!isAuthenticated ? (<LoginButton />) : (<LogoutButton />)}
 
       <Profile />
-      {isAuthenticated ? (idExists ? (<Schedule />) : (<Signup />)) : <></>} */}
+      {isAuthenticated ? (idExists ? (<Schedule />) : (<Signup user={currentUser} />)) : <></>} */}
     </div>
   )
 }

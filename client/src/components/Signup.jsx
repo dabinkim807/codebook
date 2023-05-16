@@ -1,7 +1,15 @@
 import React from "react";
 
 function Signup() {
-  
+  // user={currentUser}
+
+  const [newUsername, setNewUsername] = useState("");
+
+  const handleUsernameChange = (e) => {
+    e.preventDefault();
+    setNewUsername(e.target.value);
+  }
+
   return (
     <div className="Signup">
       <h1>Sign up</h1>

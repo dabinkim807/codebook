@@ -8,8 +8,8 @@ function Schedule(props) {
     cc_category: "",
 		cc_frequency: "",
 		cc_day: "",
-    e_frequency: "",
     e_reminder: false,
+    e_frequency: "",
     validated: false
   }
   const [newSchedule, setNewSchedule] = useState(defaultSchedule);
@@ -29,6 +29,10 @@ function Schedule(props) {
   const handleDayChange = (e) => {
     e.preventDefault();
     setNewSchedule((newSchedule) => ({...newSchedule, cc_day: e.target.value}));
+  }
+  const handleReminderChange = (e) => {
+    e.preventDefault();
+    setNewSchedule((newSchedule) => ({...newSchedule, e_reminder: e.target.value}));
   }
 
   return (

@@ -1,7 +1,30 @@
 import React from "react";
 
 function Validation(props) {
-  // currentUser={currentUser}
+  // currentUser={currentUser} setCurrentUser={setCurrentUser}
+
+  const handleDone = (e) => {
+    e.preventDefault();
+    const getDone = () => {
+      fetch("/api/done")
+        .then((response) => {
+          if (response.status === 400) {
+            response.text().then((text) => {
+              alert(text);
+            });
+            return null;
+          } else {
+            return response.json();
+          }})
+        .then((response) => {
+          if (response !== null) {
+            let n = [...props.currentUser, response];
+            props.setCurrentUser(n);
+          }
+        });
+    }
+    getDone();
+  }
 
   return (
     <div className="Validation">

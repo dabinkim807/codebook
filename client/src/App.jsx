@@ -7,8 +7,6 @@ import Validation from './components/Validation';
 import Schedule from './components/Schedule';
 import Signup from './components/Signup';
 import MyNavBar from './components/Navbar';
-import LoginButton from './components/auth0/LoginButton';
-import LogoutButton from './components/auth0/LoginButton';
 
 // const Profile = () => {
 //   const { user, isAuthenticated, isLoading } = useAuth0();

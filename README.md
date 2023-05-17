@@ -31,14 +31,14 @@ __This project requires Auth0! Please visit [Auth0](https://auth0.com/) to make 
 Step 1: Clone project & switch into the project directory.
 
 ```
-git clone git@github.com:dabinkim807/codebook.git
-cd codebook
+  git clone git@github.com:dabinkim807/codebook.git
+  cd codebook
 ```
   
 Step 2: Install all packages.
 
 ```
-cd client && npm install && cd ../server && npm install
+  cd client && npm install && cd ../server && npm install
 ```
 
 Step 3: Setup Environment Variables
@@ -48,25 +48,14 @@ Step 3: Setup Environment Variables
 Step 4: Connect the database and the data.
 
 ```
-cd server
-psql postgres -f db.sql
+  cd server
+  psql codebook -f db.sql
 ```
 
 Step 5: Start the program!
 
-Method 1: Have two servers running at the same time.
-
 ```
-cd client && npm start
-// open a new terminal
-cd server && npm start
-```
-
-Method 2: Have just one server running.
-
-```
-cd client && npm run build
-cd server && npm run start
+  cd server && npm run dev
 ```
 
 Note: Client server will be running on http://localhost:5173 and server will be running on http://localhost:8080.

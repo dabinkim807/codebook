@@ -3,10 +3,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import React from "react";
 import { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
+import Landing from './components/Landing';
 import Signup from './components/Signup';
 import Validation from './components/Validation';
 import Schedule from './components/Schedule';
-import Landing from './components/Landing';
 import MyNavBar from './components/Navbar';
 
 
@@ -39,10 +39,8 @@ function App() {
     <div className="App">
       <MyNavBar />
       <Landing />
-      
-      {/* {!isAuthenticated ? (<LoginButton />) : (<LogoutButton />)}
 
-      {isAuthenticated ? (idExists ? (<Schedule currentUser={currentUser} setCurrentUser={setCurrentUser} />) : (<Signup currentUser={currentUser} setCurrentUser={setCurrentUser} />)) : <></>} */}
+      {/* {isAuthenticated ? (idExists ? (<Schedule currentUser={currentUser} setCurrentUser={setCurrentUser} />) : (<Signup currentUser={currentUser} setCurrentUser={setCurrentUser} />)) : <></>} */}
       {/* {currentUser.test_challenge !== null ? (<Validation currentUser={currentUser} setCurrentUser={setCurrentUser} />) : (<Signup />)} */}
     </div>
   )

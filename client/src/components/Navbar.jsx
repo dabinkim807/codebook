@@ -2,11 +2,13 @@ import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import LoginButton from './auth0/LoginButton';
-import LogoutButton from './auth0/LoginButton';
+import LogoutButton from './auth0/LogoutButton';
 import Profile from './auth0/Profile';
+import { useAuth0 } from "@auth0/auth0-react";
 
 
 function MyNavBar(props) {
+  const { isAuthenticated } = useAuth0();
 
   return (
     <>
@@ -24,8 +26,7 @@ function MyNavBar(props) {
         <Navbar.Toggle />
         <Navbar.Collapse className="justify-content-end">
           <Profile />
-          <LoginButton />
-          <LogoutButton />
+          {!isAuthenticated ? (<LoginButton />) : (<LogoutButton />)}
         </Navbar.Collapse>
       </Container>
     </Navbar>

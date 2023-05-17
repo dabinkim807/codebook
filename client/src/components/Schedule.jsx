@@ -39,6 +39,37 @@ function Schedule(props) {
     setNewSchedule((newSchedule) => ({...newSchedule, e_frequency: e.target.value}));
   }
 
+  const handleSchedule = (e) => {
+    e.preventDefault();
+    const postSchedule = () => {
+      fetch("/api/schedule", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/JSON"
+        },
+        body: JSON.stringify(newSchedule)
+      })
+        .then((response) => {
+          if (response.status === 400) {
+            response.text().then((text) => {
+              alert(text);
+            });
+            return null;
+          } else {
+            return response.json();
+          }})
+        .then((response) => {
+          if (response !== null) {
+            let n = [...props.currentUser, response];
+            props.setCurrentUser(n);
+            setNewSchedule("");
+          }
+        });
+            
+    }
+    postSchedule();
+  }
+
   return (
     <div className="Schedule">
       <h1>Schedule</h1>
@@ -109,7 +140,6 @@ function Schedule(props) {
           <option value="Every Day">Every Day</option>
         </select>
 
-        <button type="reset" onClick={handleReset}>Reset</button>
         <button type="submit" onClick={handleSchedule}>Schedule</button>
       </form>
     </div>

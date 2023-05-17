@@ -46,18 +46,27 @@ app.get('/api/user', jwtCheck, async (req, res) => {
     // if user is not in db, validated === false
     // show user Sign Up component
     if (users.length !== 1) {
-      return res.status(200).json({ validated: false });
+      return res.status(200).json({ idExists: false });
     }
 
     // if user is validated, validated === true
     // show Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
     if (users[0].validated) {
       return res.status(200).json({
+        user_id: users[0].user_id,
+        username: users[0].username,
+        email: users[0].email,
+        test_challenge: users[0].test_challenge,
+        test_created: users[0].test_created,
+        validated: true,
         cc_category: users[0].cc_category,
         cc_rank: users[0].cc_rank,
         cc_frequency: users[0].cc_frequency,
         cc_day: users[0].cc_day,
-        validated: true
+        name: users[0].name,
+        e_frequency: users[0].e_frequency,
+        e_reminder: users[0].e_reminder,
+        idExists: true
       });
     }
 
@@ -72,11 +81,20 @@ app.get('/api/user', jwtCheck, async (req, res) => {
       if ((users[0].test_challenge === challenge.id) && (Date.parse(challenge.completedAt) - users[0].test_created <= 600000)) {
         await db.query("UPDATE users SET validated = true WHERE user_id = $1", [req.auth.payload.sub]);
         return res.status(200).json({
+          user_id: users[0].user_id,
+          username: users[0].username,
+          email: users[0].email,
+          test_challenge: users[0].test_challenge,
+          test_created: users[0].test_created,
+          validated: true,
           cc_category: users[0].cc_category,
           cc_rank: users[0].cc_rank,
           cc_frequency: users[0].cc_frequency,
           cc_day: users[0].cc_day,
-          validated: true
+          name: users[0].name,
+          e_frequency: users[0].e_frequency,
+          e_reminder: users[0].e_reminder,
+          idExists: true
         });
       }
     }
@@ -85,16 +103,30 @@ app.get('/api/user', jwtCheck, async (req, res) => {
     // re-send user the same test and keep them on Validation Page
     if (Date.now() - users[0].test_created <= 600000) {
       return res.status(200).json({
+        user_id: users[0].user_id,
+        username: users[0].username,
+        email: users[0].email,
         test_challenge: users[0].test_challenge,
         test_created: users[0].test_created,
-        validated: false
+        validated: false,
+        cc_category: users[0].cc_category,
+        cc_rank: users[0].cc_rank,
+        cc_frequency: users[0].cc_frequency,
+        cc_day: users[0].cc_day,
+        name: users[0].name,
+        e_frequency: users[0].e_frequency,
+        e_reminder: users[0].e_reminder,
+        idExists: true
       });
     }
 
     // if user has not passed test and 10 min have passed, validated === false
     // delete user from db and send them back to Sign Up component
     await db.query("DELETE FROM users WHERE user_id = $1", [req.auth.payload.sub]);
-    res.status(200).json({ validated: false });
+    res.status(200).json({
+      validated: false, 
+      idExists: false 
+    });
   } catch (e) {
     return res.status(400).json({ e });
   }

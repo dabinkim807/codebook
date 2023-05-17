@@ -29,22 +29,22 @@ function App() {
       if (response.status !== 200) {
         return
       }
-      const exists = await response.json();
-      setIdExists(exists);
+      const data = await response.json();
+      setIdExists(data.idExists);
+      setCurrentUser(data);
     }
 	} 
 	
-  useEffect(() => {getRequest()}, [user ]);
-  console.log(isAuthenticated)
+  useEffect(() => {getRequest()}, [user]);
 
   
   return (
     <div className="App">
       <MyNavBar />
       {!isAuthenticated ?  <Landing /> : <></>}
-      {isAuthenticated && idExists && isValidated ? <Schedule /> : <></>}
-      {isAuthenticated && idExists && !isValidated ? <Validation /> : <></>}
-      {isAuthenticated && !idExists ? <Signup /> : <></>}
+      {isAuthenticated && idExists && isValidated ? <Schedule currentUser={currentUser} setCurrentUser={setCurrentUser} /> : <></>}
+      {isAuthenticated && idExists && !isValidated ? <Validation currentUser={currentUser} setCurrentUser={setCurrentUser} /> : <></>}
+      {isAuthenticated && !idExists ? <Signup currentUser={currentUser} setCurrentUser={setCurrentUser} /> : <></>}
     </div>
   )
 }

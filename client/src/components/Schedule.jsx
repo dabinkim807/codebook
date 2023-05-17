@@ -1,6 +1,23 @@
-import React from "react";
+import { useState } from "react";
 
-function Schedule() {
+function Schedule(props) {
+  // currentUser={currentUser} setCurrentUser={setCurrentUser}
+
+  const defaultSchedule = {
+		cc_rank: "",
+    cc_category: "",
+		cc_frequency: "",
+		cc_day: "",
+    e_frequency: "",
+    e_reminder: false,
+    validated: false
+  }
+  const [newSchedule, setNewSchedule] = useState(defaultSchedule);
+
+  const handleDifficultyChange = (e) => {
+    e.preventDefault();
+    setNewSchedule((newSchedule) => ({...newSchedule, cc_rank: e.target.value}));
+  }
 
   return (
     <div className="Schedule">
@@ -9,7 +26,7 @@ function Schedule() {
         <h2>Code Challenge Preferences</h2>
 
         <label htmlFor="cc_rank">Difficulty</label>
-        <select name="cc_rank" id="cc_rank">
+        <select name="cc_rank" id="cc_rank" onChange={handleDifficultyChange}>
           <option value="Beginner">Beginner</option>
           <option value="Intermediate">Intermediate</option>
           <option value="Professional">Professional</option>
@@ -17,18 +34,18 @@ function Schedule() {
         </select>
 
         <label htmlFor="cc_category">Category</label>
-        <select name="cc_category" id="cc_category">
+        <select name="cc_category" id="cc_category" onChange={handleCategoryChange}>
           <option value="Algorithms">Algorithms</option>
           <option value="Data Structures">Data Structures</option>
         </select>
 
         <label htmlFor="cc_frequency">Frequency</label>
-        <select name="cc_frequency" id="cc_frequency">
+        <select name="cc_frequency" id="cc_frequency" onChange={handleFreqChange}>
           <option value="Every Week">Every Week</option>
         </select>
 
         <label htmlFor="cc_day">Day</label>
-        <select name="cc_day" id="cc_day">
+        <select name="cc_day" id="cc_day" onChange={handleDayChange}>
           <option value="Sunday">Sunday</option>
           <option value="Monday">Monday</option>
           <option value="Tuesday">Tuesday</option>
@@ -68,7 +85,7 @@ function Schedule() {
         </fieldset>
 
         <label htmlFor="e_frequency">Frequency</label>
-        <select name="e_frequency" id="e_frequency">
+        <select name="e_frequency" id="e_frequency" onChange={handleEmailFreqChange}>
           <option value="Every Day">Every Day</option>
         </select>
 

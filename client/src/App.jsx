@@ -74,7 +74,7 @@ function App() {
       {/* {!isAuthenticated ? (<LoginButton />) : (<LogoutButton />)}
 
       <Profile />
-      {isAuthenticated ? (idExists ? (<Schedule />) : (<Signup currentUser={currentUser} setCurrentUser={setCurrentUser} />)) : <></>} */}
+      {isAuthenticated ? (idExists ? (<Schedule currentUser={currentUser} setCurrentUser={setCurrentUser} />) : (<Signup currentUser={currentUser} setCurrentUser={setCurrentUser} />)) : <></>} */}
       {/* {currentUser.test_challenge !== null ? (<Validation currentUser={currentUser} setCurrentUser={setCurrentUser} />) : (<Signup />)} */}
     </div>
   )

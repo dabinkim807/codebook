@@ -18,6 +18,10 @@ function Schedule(props) {
     e.preventDefault();
     setNewSchedule((newSchedule) => ({...newSchedule, cc_rank: e.target.value}));
   }
+  const handleCategoryChange = (e) => {
+    e.preventDefault();
+    setNewSchedule((newSchedule) => ({...newSchedule, cc_category: e.target.value}));
+  }
 
   return (
     <div className="Schedule">

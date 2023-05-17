@@ -34,6 +34,10 @@ function Schedule(props) {
     e.preventDefault();
     setNewSchedule((newSchedule) => ({...newSchedule, e_reminder: e.target.value}));
   }
+  const handleEmailFreqChange = (e) => {
+    e.preventDefault();
+    setNewSchedule((newSchedule) => ({...newSchedule, e_frequency: e.target.value}));
+  }
 
   return (
     <div className="Schedule">

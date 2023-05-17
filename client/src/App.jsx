@@ -7,11 +7,9 @@ import Validation from './components/Validation';
 import Schedule from './components/Schedule';
 import Signup from './components/Signup';
 import MyNavBar from './components/Navbar';
+import LoginButton from './components/auth0/LoginButton';
 
-// const LoginButton = () => {
-//   const { loginWithRedirect } = useAuth0();
-//   return <button onClick={() => loginWithRedirect()}>Log In</button>;
-// };
+
 
 // const LogoutButton = () => {
 //   const { logout } = useAuth0();

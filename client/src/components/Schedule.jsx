@@ -26,6 +26,10 @@ function Schedule(props) {
     e.preventDefault();
     setNewSchedule((newSchedule) => ({...newSchedule, cc_frequency: e.target.value}));
   }
+  const handleDayChange = (e) => {
+    e.preventDefault();
+    setNewSchedule((newSchedule) => ({...newSchedule, cc_day: e.target.value}));
+  }
 
   return (
     <div className="Schedule">

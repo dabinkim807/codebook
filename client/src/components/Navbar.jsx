@@ -1,8 +1,9 @@
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
-import LoginButton from './components/auth0/LoginButton';
-import LogoutButton from './components/auth0/LoginButton';
+import LoginButton from './auth0/LoginButton';
+import LogoutButton from './auth0/LoginButton';
+import Profile from './auth0/Profile';
 
 
 function MyNavBar(props) {
@@ -22,9 +23,9 @@ function MyNavBar(props) {
         <Nav.Link >Your Link</Nav.Link>
         <Navbar.Toggle />
         <Navbar.Collapse className="justify-content-end">
-          <Navbar.Text>
-            Signed in as: <a href="#login">Name of User</a>
-          </Navbar.Text>
+          <Profile />
+          <LoginButton />
+          <LogoutButton />
         </Navbar.Collapse>
       </Container>
     </Navbar>

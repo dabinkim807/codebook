@@ -11,37 +11,40 @@ import MyNavBar from './components/Navbar';
 
 
 function App() {
-//   const { user, isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
+  const { user, isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
 
-//   const [idExists, setIdExists] = useState(false);
+  const [idExists, setIdExists] = useState(false);
+  const [isValidated, setIsValidated] = useState(false);
   const [currentUser, setCurrentUser] = useState();
 
-//   const getRequest = async () => {
-//     if (user) {
-//       const token = await getAccessTokenSilently()
-//       const response = await fetch("/api/user", {
-//         method: "GET",
-//         headers: {
-//           "authorization": `BEARER ${token}`
-//         }
-//       })
-//       if (response.status !== 200) {
-//         return
-//       }
-//       const exists = await response.json();
-//       setIdExists(exists);
-//     }
-// 	} 
+  const getRequest = async () => {
+    if (user) {
+      const token = await getAccessTokenSilently()
+      const response = await fetch("/api/user", {
+        method: "GET",
+        headers: {
+          "authorization": `BEARER ${token}`
+        }
+      })
+      if (response.status !== 200) {
+        return
+      }
+      const exists = await response.json();
+      setIdExists(exists);
+    }
+	} 
 	
-//   useEffect(() => {getRequest()}, [user ]);
+  useEffect(() => {getRequest()}, [user ]);
+  console.log(isAuthenticated)
 
+  
   return (
     <div className="App">
       <MyNavBar />
-      <Landing />
-
-      {/* {isAuthenticated ? (idExists ? (<Schedule currentUser={currentUser} setCurrentUser={setCurrentUser} />) : (<Signup currentUser={currentUser} setCurrentUser={setCurrentUser} />)) : <></>} */}
-      {/* {currentUser.test_challenge !== null ? (<Validation currentUser={currentUser} setCurrentUser={setCurrentUser} />) : (<Signup />)} */}
+      {!isAuthenticated ?  <Landing /> : <></>}
+      {isAuthenticated && idExists && isValidated ? <Schedule /> : <></>}
+      {isAuthenticated && idExists && !isValidated ? <Validation /> : <></>}
+      {isAuthenticated && !idExists ? <Signup /> : <></>}
     </div>
   )
 }

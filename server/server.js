@@ -222,7 +222,7 @@ app.post('/api/user', jwtCheck, async (req, res) => {
     //   keep user at Sign Up component
     // otherwise cw_data.success === undefined
     if (cw_data.success === false) {
-      return res.status(200).json({ errorMessage: `${req.body.username} is not a valid code wars username` });
+      return res.status(200).json({ errorMessage: `${req.body.username} is not a valid Codewars username` });
     }
 
     //// call Auth0 API
@@ -263,7 +263,8 @@ app.post('/api/user', jwtCheck, async (req, res) => {
     return res.status(200).json({
       test_challenge: random_question,
       test_created: time_now,
-      validated: false
+      validated: false,
+      idExists: true
     });
   } catch (e) {
     return res.status(400).json({ e });

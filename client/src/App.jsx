@@ -11,29 +11,27 @@ import MyNavBar from './components/Navbar';
 
 
 function App() {
-  const { user, isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
+  const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
 
-  const [idExists, setIdExists] = useState(false);
-  const [isValidated, setIsValidated] = useState(false);
-  const [currentUser, setCurrentUser] = useState();
+  const [currentUser, setCurrentUser] = useState({});
 
   const getRequest = async () => {
     if (user) {
-      const token = await getAccessTokenSilently()
+      const token = await getAccessTokenSilently();
       const response = await fetch("/api/user", {
         method: "GET",
         headers: {
           "authorization": `BEARER ${token}`
         }
-      })
+      });
       if (response.status !== 200) {
-        return
+        return;
       }
       const data = await response.json();
-      setIdExists(data.idExists);
-      setCurrentUser(data);
+      console.log({...currentUser, ...data});
+      setCurrentUser({...currentUser, ...data});
     }
-	} 
+	}
 	
   useEffect(() => {getRequest()}, [user]);
 
@@ -41,10 +39,10 @@ function App() {
   return (
     <div className="App">
       <MyNavBar />
-      {!isAuthenticated ?  <Landing /> : <></>}
-      {isAuthenticated && idExists && isValidated ? <Schedule currentUser={currentUser} setCurrentUser={setCurrentUser} /> : <></>}
-      {isAuthenticated && idExists && !isValidated ? <Validation currentUser={currentUser} setCurrentUser={setCurrentUser} /> : <></>}
-      {isAuthenticated && !idExists ? <Signup currentUser={currentUser} setCurrentUser={setCurrentUser} /> : <></>}
+      {!isAuthenticated ? <Landing /> : <></>}
+      {isAuthenticated && !currentUser.idExists ? <Signup currentUser={currentUser} setCurrentUser={setCurrentUser}/> : <></>}
+      {isAuthenticated && currentUser.idExists && !currentUser.validated ? <Validation currentUser={currentUser} setCurrentUser={setCurrentUser} /> : <></>}
+      {isAuthenticated && currentUser.idExists && currentUser.validated ? <Schedule currentUser={currentUser} setCurrentUser={setCurrentUser} /> : <></>}
     </div>
   )
 }

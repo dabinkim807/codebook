@@ -46,7 +46,7 @@ app.get('/api/user', jwtCheck, async (req, res) => {
     // if user is not in db, validated === false
     // show user Sign Up component
     if (users.length !== 1) {
-      return res.status(200).json({ idExists: false });
+      return res.status(200).json({ idExists: false, validated: false });
     }
 
     // if user is validated, validated === true
@@ -199,13 +199,13 @@ app.post('/api/user', jwtCheck, async (req, res) => {
     // if user_id already exists in db and user tries to run Post route again (i.e. runs request through Postman), send error
     const { rows: id } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
     if (id.length === 1) {
-      return res.status(400).json(`User with user ID ${req.auth.payload.sub} already exists`);
+      return res.status(200).json({ errorMessage: `User with user ID ${req.auth.payload.sub} already exists` });
     }
 
     // if username already exists in db and another user id tries to submit the same username, send error
     const { rows: username } = await db.query("SELECT * FROM users WHERE username = $1", [req.body.username]);
     if (username.length === 1) {
-      return res.status(400).json(`Username ${req.auth.payload.sub} already exists`);
+      return res.status(200).json({ errorMessage: `Username ${req.body.username} already exists` });
     }
 
     //// call Codewars List of CC API
@@ -216,7 +216,7 @@ app.post('/api/user', jwtCheck, async (req, res) => {
     //   keep user at Sign Up component
     // otherwise cw_data.success === undefined
     if (cw_data.success === false) {
-      return res.status(200).json({ validated: false });
+      return res.status(200).json({ errorMessage: `${req.body.username} is not a valid code wars username` });
     }
 
     //// call Auth0 API

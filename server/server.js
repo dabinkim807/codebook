@@ -68,7 +68,6 @@ app.get('/api/user', jwtCheck, async (req, res) => {
         cc_day: users[0].cc_day,
         name: users[0].name,
         e_frequency: users[0].e_frequency,
-        e_reminder: users[0].e_reminder,
         idExists: true
       });
     }
@@ -96,7 +95,6 @@ app.get('/api/user', jwtCheck, async (req, res) => {
           cc_day: users[0].cc_day,
           name: users[0].name,
           e_frequency: users[0].e_frequency,
-          e_reminder: users[0].e_reminder,
           idExists: true
         });
       }
@@ -118,7 +116,6 @@ app.get('/api/user', jwtCheck, async (req, res) => {
         cc_day: users[0].cc_day,
         name: users[0].name,
         e_frequency: users[0].e_frequency,
-        e_reminder: users[0].e_reminder,
         idExists: true
       });
     }
@@ -276,7 +273,7 @@ app.post('/api/user', jwtCheck, async (req, res) => {
 // validated user posting/editing/deleting schedule (for delete, frontend can post null values)
 app.post('/api/schedule', jwtCheck, async (req, res) => {
   try {
-    // frontend sends: cc_category, cc_rank, cc_frequency, cc_day, e_reminder, e_frequency
+    // frontend sends: cc_category, cc_rank, cc_frequency, cc_day, e_frequency
     console.log("post schedule route")
     // if user tries to run Schedule route without going through sign up process (i.e. runs request through Postman), user does not exist in db
     const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
@@ -290,18 +287,18 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
     // for simplicity, for now the user has to provide all fields *enforce in the frontend
     // but users can still use Postman to send invalid inputs that are not allowed by frontend
     // db will validate for me
-    let inputs = [req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day, req.body.e_frequency, req.body.e_reminder];
+    let cc_inputs = [req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day];
 
-    console.log(inputs);
+    console.log(cc_inputs);
 
-    if (!(inputs.every(x => x === null) || inputs.every(x => x !== null))) {
+    if (!(cc_inputs.every(x => x === null) || cc_inputs.every(x => x !== null))) {
       // same thing as !inputs.every(x => x === null) && !inputs.every(x => x !== null)
-      return res.status(200).send("Inputs must either be all null or all not null");
+      return res.status(200).send("Inputs must either be all completed or all empty");
     }
 
     await db.query(
-      "UPDATE users SET cc_category = $2, cc_rank = $3, cc_frequency = $4, cc_day = $5, e_frequency = $6, e_reminder = $7 WHERE user_id = $1",
-      [req.auth.payload.sub, req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day, req.body.e_frequency, req.body.e_reminder]
+      "UPDATE users SET cc_category = $2, cc_rank = $3, cc_frequency = $4, cc_day = $5, e_frequency = $6 WHERE user_id = $1",
+      [req.auth.payload.sub, req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day, req.body.e_frequency]
     );
 
     console.log("user preferences updated")
@@ -413,7 +410,6 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
 //       u.cc_day,
 //       u.name,
 //       u.e_frequency,
-//       u.e_reminder,
 //       ucc.challenge
 //     FROM 
 //       users u
@@ -476,7 +472,7 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
       
 
 //     // if cc_day !== current day of the week and user is opted into reminders, send user reminder based on e_frequency (currently only 'Once a day, every day')
-//     } else if (user.e_reminder === true) {
+//     } else if (user.e_frequency === 'Every Day') {
 //       const main = async () => {
 //         const options = {
 //           to: `${user.email}`,
@@ -597,7 +593,6 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
 //       u.cc_day,
 //       u.name,
 //       u.e_frequency,
-//       u.e_reminder,
 //       ucc.challenge
 //     FROM 
 //       users u
@@ -660,7 +655,7 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
       
 
 //     // if cc_day !== current day of the week and user is opted into reminders, send user reminder based on e_frequency (currently only 'Once a day, every day')
-//     } else if (user.e_reminder === true) {
+//     } else if (user.e_frequency === 'Every Day') {
 //       const main = async () => {
 //         const options = {
 //           to: `${user.email}`,

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
+import Alert from '@mui/material/Alert';
 
 
 function Schedule(props) {
@@ -7,15 +8,16 @@ function Schedule(props) {
   const { user, getAccessTokenSilently } = useAuth0();
 
   const defaultSchedule = {
-		cc_rank: "",
-    cc_category: "",
-		cc_frequency: "",
-		cc_day: "",
+		cc_rank: null,
+    cc_category: null,
+		cc_frequency: null,
+		cc_day: null,
     e_reminder: false,
-    e_frequency: "",
+    e_frequency: null,
     validated: false
   }
   const [newSchedule, setNewSchedule] = useState(defaultSchedule);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleDifficultyChange = (e) => {
     e.preventDefault();
@@ -44,6 +46,7 @@ function Schedule(props) {
 
   const handleSchedule = (e) => {
     e.preventDefault();
+    setSuccessMessage("");
     postSchedule();
   }
 
@@ -85,7 +88,8 @@ function Schedule(props) {
 
         <label htmlFor="cc_rank">Difficulty</label>
         <select name="cc_rank" id="cc_rank" onChange={handleDifficultyChange}>
-          <option value="" selected disabled hidden >Select an Option</option>
+          <option value="default" selected disabled hidden >Select an Option</option>
+          <option value=""></option>
           <option value="Beginner">Beginner</option>
           <option value="Intermediate">Intermediate</option>
           <option value="Professional">Professional</option>
@@ -94,20 +98,23 @@ function Schedule(props) {
 
         <label htmlFor="cc_category">Category</label>
         <select name="cc_category" id="cc_category" onChange={handleCategoryChange}>
-          <option value="" selected disabled hidden >Select an Option</option>
+          <option value="default" selected disabled hidden >Select an Option</option>
+          <option value=""></option>
           <option value="Algorithms">Algorithms</option>
           <option value="Data Structures">Data Structures</option>
         </select>
 
         <label htmlFor="cc_frequency">Frequency</label>
         <select name="cc_frequency" id="cc_frequency" onChange={handleFreqChange}>
-          <option value="" selected disabled hidden >Select an Option</option>
+          <option value="default" selected disabled hidden >Select an Option</option>
+          <option value=""></option>
           <option value="Every Week">Every Week</option>
         </select>
 
         <label htmlFor="cc_day">Day</label>
         <select name="cc_day" id="cc_day" onChange={handleDayChange}>
-          <option value="" selected disabled hidden >Select an Option</option>
+          <option value="default" selected disabled hidden >Select an Option</option>
+          <option value=""></option>
           <option value="Sunday">Sunday</option>
           <option value="Monday">Monday</option>
           <option value="Tuesday">Tuesday</option>
@@ -148,12 +155,14 @@ function Schedule(props) {
 
         <label htmlFor="e_frequency">Frequency</label>
         <select name="e_frequency" id="e_frequency" onChange={handleEmailFreqChange}>
-          <option value="" selected disabled hidden >Select an Option</option>
+          <option value="default" selected disabled hidden >Select an Option</option>
+          <option value=""></option>
           <option value="Every Day">Every Day</option>
         </select>
 
         <button type="submit" onClick={handleSchedule}>Schedule</button>
       </form>
+      {successMessage !== "" ? <Alert severity="success">Code challenge scheduled! Watch out for the email.</Alert> : <></>}
     </div>
   )
 }

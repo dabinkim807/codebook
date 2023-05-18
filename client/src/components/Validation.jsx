@@ -1,28 +1,31 @@
 function Validation(props) {
   // currentUser={currentUser} setCurrentUser={setCurrentUser}
+  const { user, getAccessTokenSilently } = useAuth0();
+
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const getDone = async () => {
+    if (user) {
+      const token = await getAccessTokenSilently();
+      const response = await fetch("/api/done", {
+        method: "GET",
+        headers: {
+          "authorization": `BEARER ${token}`
+        },
+      });
+      const data = await response.json();
+      if (data.errorMessage !== undefined) {
+        setErrorMessage(data.errorMessage);
+        return;
+      }
+      props.setCurrentUser({...props.currentUser, ...data});
+    }
+  };
 
   const handleDone = (e) => {
     e.preventDefault();
-    const getDone = () => {
-      fetch("/api/done")
-        .then((response) => {
-          if (response.status === 400) {
-            response.text().then((text) => {
-              alert(text);
-            });
-            return null;
-          } else {
-            return response.json();
-          }})
-        .then((response) => {
-          if (response !== null) {
-            let n = [...props.currentUser, response];
-            props.setCurrentUser(n);
-          }
-        });
-    }
     getDone();
-  }
+  };
 
   return (
     <div className="Validation">
@@ -32,6 +35,7 @@ function Validation(props) {
       <p>Click on the "DONE" button once you've passed the challenge!</p>
       <a href={"https://www.codewars.com/kata/" + props.currentUser.test_challenge}>Code Challenge</a>
       <button type="submit" onClick={handleDone}>Done</button>
+      {errorMessage !== "" ? <Alert severity="error">{errorMessage}</Alert> : <></>}
     </div>
   )
 }

@@ -46,7 +46,10 @@ app.get('/api/user', jwtCheck, async (req, res) => {
     // if user is not in db, validated === false
     // show user Sign Up component
     if (users.length !== 1) {
-      return res.status(200).json({ idExists: false, validated: false });
+      return res.status(200).json({
+        idExists: false, 
+        validated: false 
+      });
     }
 
     // if user is validated, validated === true
@@ -139,7 +142,7 @@ app.get('/api/done', jwtCheck, async (req, res) => {
 
     // if user tries to run Done route without going through sign up process (i.e. runs request through Postman), user does not exist in db
     if (users.length !== 1) {
-      return res.status(400).send(`No user with user ID ${req.auth.payload.sub}`);
+      return res.status(200).json({ errorMessage: `No user with user ID ${req.auth.payload.sub}` });
     }
     // if scheduled job runs before user clicks Done button, validated === true in db
     // send user to Schedule Page and send frontend: cc_category, cc_rank, cc_frequency, cc_day [fill in / pre-populate Schedule fields]
@@ -185,7 +188,10 @@ app.get('/api/done', jwtCheck, async (req, res) => {
     // if user has not passed test and 10 min have passed, validated === false
     // delete user from db and send them back to Sign Up component
     await db.query("DELETE FROM users WHERE user_id = $1", [req.auth.payload.sub]);
-    res.status(200).json({ validated: false });
+    res.status(200).json({
+      idExists: false, 
+      validated: false 
+    });
   } catch (e) {
     return res.status(400).json({ e });
   }

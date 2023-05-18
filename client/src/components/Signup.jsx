@@ -11,7 +11,7 @@ function Signup(props) {
 
   const postUser = async () => {
     if (user) {
-      const token = await getAccessTokenSilently()
+      const token = await getAccessTokenSilently();
       const response = await fetch("/api/user", {
         method: "POST",
         headers: {

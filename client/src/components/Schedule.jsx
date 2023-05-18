@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { useAuth0 } from "@auth0/auth0-react";
+
 
 function Schedule(props) {
   // currentUser={currentUser} setCurrentUser={setCurrentUser}
+  const { user, getAccessTokenSilently } = useAuth0();
 
   const defaultSchedule = {
 		cc_rank: "",
@@ -41,34 +44,38 @@ function Schedule(props) {
 
   const handleSchedule = (e) => {
     e.preventDefault();
-    const postSchedule = () => {
-      fetch("/api/schedule", {
-        method: "POST",
-        headers: {
-          "Content-type": "application/JSON"
-        },
-        body: JSON.stringify(newSchedule)
-      })
-        .then((response) => {
-          if (response.status === 400) {
-            response.text().then((text) => {
-              alert(text);
-            });
-            return null;
-          } else {
-            return response.json();
-          }})
-        .then((response) => {
-          if (response !== null) {
-            let n = [...props.currentUser, response];
-            props.setCurrentUser(n);
-            setNewSchedule("");
-          }
-        });
-            
-    }
     postSchedule();
   }
+
+  const postSchedule = async () => {
+    if (user) {
+      console.log(user);
+
+      const token = await getAccessTokenSilently();
+      const response = await fetch("/api/schedule", {
+        method: "POST",
+        headers: {
+          "authorization": `BEARER ${token}`,
+          "Content-type": "application/JSON"
+        },
+        body: JSON.stringify({
+          cc_category: newSchedule.cc_category,
+          cc_rank: newSchedule.cc_rank,
+          cc_frequency: newSchedule.cc_frequency,
+          cc_day: newSchedule.cc_day,
+          e_reminder: newSchedule.e_reminder,
+          e_frequency: newSchedule.e_frequency
+        })
+      });
+      const data = await response.json();
+      if (data.errorMessage !== undefined) {
+        setErrorMessage(data.errorMessage);
+        setNewSchedule(defaultSchedule);
+        return;
+      }
+      props.setCurrentUser({...props.currentUser, ...data});
+    }
+  };
 
   return (
     <div className="Schedule">
@@ -78,6 +85,7 @@ function Schedule(props) {
 
         <label htmlFor="cc_rank">Difficulty</label>
         <select name="cc_rank" id="cc_rank" onChange={handleDifficultyChange}>
+          <option value="" selected disabled hidden >Select an Option</option>
           <option value="Beginner">Beginner</option>
           <option value="Intermediate">Intermediate</option>
           <option value="Professional">Professional</option>
@@ -86,17 +94,20 @@ function Schedule(props) {
 
         <label htmlFor="cc_category">Category</label>
         <select name="cc_category" id="cc_category" onChange={handleCategoryChange}>
+          <option value="" selected disabled hidden >Select an Option</option>
           <option value="Algorithms">Algorithms</option>
           <option value="Data Structures">Data Structures</option>
         </select>
 
         <label htmlFor="cc_frequency">Frequency</label>
         <select name="cc_frequency" id="cc_frequency" onChange={handleFreqChange}>
+          <option value="" selected disabled hidden >Select an Option</option>
           <option value="Every Week">Every Week</option>
         </select>
 
         <label htmlFor="cc_day">Day</label>
         <select name="cc_day" id="cc_day" onChange={handleDayChange}>
+          <option value="" selected disabled hidden >Select an Option</option>
           <option value="Sunday">Sunday</option>
           <option value="Monday">Monday</option>
           <option value="Tuesday">Tuesday</option>
@@ -137,6 +148,7 @@ function Schedule(props) {
 
         <label htmlFor="e_frequency">Frequency</label>
         <select name="e_frequency" id="e_frequency" onChange={handleEmailFreqChange}>
+          <option value="" selected disabled hidden >Select an Option</option>
           <option value="Every Day">Every Day</option>
         </select>
 

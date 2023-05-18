@@ -139,6 +139,7 @@ app.get('/api/user', jwtCheck, async (req, res) => {
 app.get('/api/done', jwtCheck, async (req, res) => {
   try {
     const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
+    console.log(users)
 
     // if user tries to run Done route without going through sign up process (i.e. runs request through Postman), user does not exist in db
     if (users.length !== 1) {
@@ -159,6 +160,7 @@ app.get('/api/done', jwtCheck, async (req, res) => {
     // stretch goal: to handle multiple pages of results, create a function that calls API for length of pages
     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
     const cw_data = await cw_response.json();
+    console.log(cw_data);
 
     for (const challenge of cw_data.data) {
       // if user completed test within time limit, set validated === true, 
@@ -274,29 +276,41 @@ app.post('/api/user', jwtCheck, async (req, res) => {
 // validated user posting/editing/deleting schedule (for delete, frontend can post null values)
 app.post('/api/schedule', jwtCheck, async (req, res) => {
   try {
-    // frontend sends: cc_category, cc_rank, cc_frequency, cc_day
-
+    // frontend sends: cc_category, cc_rank, cc_frequency, cc_day, e_reminder, e_frequency
+    console.log("post schedule route")
     // if user tries to run Schedule route without going through sign up process (i.e. runs request through Postman), user does not exist in db
     const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
     if (users.length !== 1) {
-      return res.status(400).send(`No user with user ID ${req.auth.payload.sub}`);
+      return res.status(200).send(`No user with user ID ${req.auth.payload.sub}`);
     }
     if (users[0].validated === false) {
-      return res.status(400).send(`User with user ID ${req.auth.payload.sub} is not validated`);
+      return res.status(200).send(`User with user ID ${req.auth.payload.sub} is not validated`);
     }
 
     // for simplicity, for now the user has to provide all fields *enforce in the frontend
     // but users can still use Postman to send invalid inputs that are not allowed by frontend
     // db will validate for me
     let inputs = [req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day, req.body.e_frequency, req.body.e_reminder];
+
+    console.log(inputs);
+
     if (!(inputs.every(x => x === null) || inputs.every(x => x !== null))) {
       // same thing as !inputs.every(x => x === null) && !inputs.every(x => x !== null)
-      return res.status(400).send("Inputs must either be all null or all not null");
+      return res.status(200).send("Inputs must either be all null or all not null");
     }
 
-    await db.query("UPDATE users SET cc_category = $2, cc_rank = $3, cc_frequency = $4, cc_day = $5, e_frequency = $6, e_reminder = $7 WHERE user_id = $1",
-      [req.auth.payload.sub, req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day, req.body.e_frequency, req.body.e_reminder]);
-    return res.status(200).json({ ...req.body, validated: true });
+    await db.query(
+      "UPDATE users SET cc_category = $2, cc_rank = $3, cc_frequency = $4, cc_day = $5, e_frequency = $6, e_reminder = $7 WHERE user_id = $1",
+      [req.auth.payload.sub, req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day, req.body.e_frequency, req.body.e_reminder]
+    );
+
+    console.log("user preferences updated")
+
+    return res.status(200).json({ 
+      ...req.body, 
+      validated: true,
+      idExists: true
+    });
   } catch (e) {
     return res.status(400).json({ e });
   }

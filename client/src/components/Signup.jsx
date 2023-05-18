@@ -43,7 +43,7 @@ function Signup(props) {
   return (
     <div className="Signup">
       <h1>Sign up</h1>
-      <p>If you don't have a Codewars account, click <a href="https://www.codewars.com/">here</a> to sign up!</p>
+      <p>If you don't have a Codewars account, click <a href="https://www.codewars.com/" target="_blank">here</a> to sign up!</p>
       <p>Please enter your Codewars username below.</p>
       <form>
         <label>Codewars username: </label>

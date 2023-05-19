@@ -278,10 +278,10 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
     // if user tries to run Schedule route without going through sign up process (i.e. runs request through Postman), user does not exist in db
     const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
     if (users.length !== 1) {
-      return res.status(200).send(`No user with user ID ${req.auth.payload.sub}`);
+      return res.status(200).json({ errorMessage: `No user with user ID ${req.auth.payload.sub}` });
     }
     if (users[0].validated === false) {
-      return res.status(200).send(`User with user ID ${req.auth.payload.sub} is not validated`);
+      return res.status(200).json({ errorMessage: `User with user ID ${req.auth.payload.sub} is not validated` });
     }
 
     // for simplicity, for now the user has to provide all fields *enforce in the frontend
@@ -290,10 +290,17 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
     let cc_inputs = [req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day];
 
     console.log(cc_inputs);
+    for (const input of cc_inputs) {
+      console.log(typeof input)
+    }
 
     if (!(cc_inputs.every(x => x === null) || cc_inputs.every(x => x !== null))) {
       // same thing as !inputs.every(x => x === null) && !inputs.every(x => x !== null)
-      return res.status(200).send("Inputs must either be all completed or all empty");
+      console.log(cc_inputs);
+      
+
+
+      return res.status(200).json({ errorMessage: "Inputs must either be all completed or all empty" });
     }
 
     await db.query(

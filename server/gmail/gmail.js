@@ -1,11 +1,21 @@
 const { google } = require('googleapis');
 const MailComposer = require('nodemailer/lib/mail-composer');
-const credentials = require('./credentials.json');
-const tokens = require('./tokens.json');
+// const credentials = require('./credentials.json');
+// const tokens = require('./tokens.json');
 
 const getGmailService = () => {
-  const { client_secret, client_id, redirect_uris } = credentials.installed;
-  const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+  // const { client_secret, client_id, redirect_uris } = credentials.installed;
+  const tokens = {
+    "access_token": process.env.GMAIL_ACCESS_TOKEN,
+    "refresh_token": process.env.GMAIL_REFRESH_TOKEN,
+    "scope": "https://www.googleapis.com/auth/gmail.send",
+    "token_type": "Bearer",
+    "expiry_date": 1684190581772
+  }
+
+  const gmail_client_id = process.env.GMAIL_CLIENT_ID;
+  const gmail_client_secret = process.env.GMAIL_CLIENT_SECRET;
+  const oAuth2Client = new google.auth.OAuth2(gmail_client_id, gmail_client_secret, "http://localhost");
   oAuth2Client.setCredentials(tokens);
   const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
   return gmail;

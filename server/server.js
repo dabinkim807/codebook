@@ -394,16 +394,8 @@ const gradeCC = async () => {
   }
 };
 
-
-// scheduled job that sends automated emails every 24 hrs
-cron.schedule("0 0 * * *", async function () {
-  console.log("---------------------");
-  console.log("running a task every 24 hrs");
-
-  gradeCC();
-
+const sendReminderEmail = async () => {
   // check all users from users table where cc_category is not null (already required all cc preferences to be either all null or all not null) and questions are 'In Progress'
-  // query for reminder emails ONLY
   const { rows: users } = await db.query(
     `
     SELECT 
@@ -421,6 +413,70 @@ cron.schedule("0 0 * * *", async function () {
       users u
       JOIN users_code_challenges ucc ON ucc.user_id = u.user_id
     WHERE cc_category IS NOT NULL AND cc_state = 'In Progress'
+    `
+  );
+
+  for (const user of users) {
+    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
+    await cw_response.json();
+
+    const convertDay = {
+      Sunday: 0,
+      Monday: 1,
+      Tuesday: 2,
+      Wednesday: 3,
+      Thursday: 4,
+      Friday: 5,
+      Saturday: 6
+    };
+
+    // if cc_day !== current day of the week and user is opted into reminders, send user reminder based on e_frequency (currently only 'Once a day, every day')
+    if ((convertDay[user.cc_day] === new Date().getDay()) && (user.e_frequency === 'Every Day')) {
+      const main = async () => {
+        const options = {
+          to: `${user.email}`,
+          replyTo: 'techtonica.codebook@gmail.com',
+          subject: 'REMINDER: Complete your scheduled code challenge',
+          text: `Don't forget to solve your code challenge! Link to challenge: https://www.codewars.com/kata/${user.challenge}`,
+          textEncoding: 'base64',
+        };
+        const messageId = await sendMail(options);
+        return messageId;
+      };
+
+      main()
+        .then((messageId) => console.log('Message sent successfully:', messageId))
+        .catch((err) => console.error(err));
+    }
+  }
+};
+
+
+// scheduled job that sends automated emails every 24 hrs
+cron.schedule("0 0 * * *", async function () {
+  console.log("---------------------");
+  console.log("running a task every 24 hrs");
+
+  gradeCC();
+
+  // check all users from users table where cc_category is not null (already required all cc preferences to be either all null or all not null) and questions are 'In Progress'
+  const { rows: users } = await db.query(
+    `
+    SELECT 
+      u.user_id,
+      u.username,
+      u.email,
+      u.cc_category,
+      u.cc_rank,
+      u.cc_frequency,
+      u.cc_day,
+      u.name,
+      u.e_frequency,
+      ucc.challenge
+    FROM 
+      users u
+      JOIN users_code_challenges ucc ON ucc.user_id = u.user_id
+    WHERE cc_category IS NOT NULL
     `
   );
 
@@ -475,31 +531,11 @@ cron.schedule("0 0 * * *", async function () {
       main()
         .then((messageId) => console.log('Message sent successfully:', messageId))
         .catch((err) => console.error(err));
-      
-
-    // if cc_day !== current day of the week and user is opted into reminders, send user reminder based on e_frequency (currently only 'Once a day, every day')
-    } else if (user.e_frequency === 'Every Day') {
-      const main = async () => {
-        const options = {
-          to: `${user.email}`,
-          replyTo: 'techtonica.codebook@gmail.com',
-          subject: 'REMINDER: Complete your scheduled code challenge',
-          text: `Don't forget to solve your code challenge! Link to challenge: https://www.codewars.com/kata/${user.challenge}`,
-          textEncoding: 'base64',
-        };
-
-        console.log(user.email)
-        console.log(options.to)
-
-        const messageId = await sendMail(options);
-        return messageId;
-      };
-
-      main()
-        .then((messageId) => console.log('Message sent successfully:', messageId))
-        .catch((err) => console.error(err));
-    }
+    
+    } 
   }
+
+  sendReminderEmail();
 });
 
 

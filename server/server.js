@@ -465,25 +465,7 @@ const sendReminderEmail = async () => {
 
 const sendNewCCEmail = async () => {
   // check all users from users table where cc_category is not null (already required all cc preferences to be either all null or all not null) and questions are 'In Progress'
-  const { rows: users } = await db.query(
-    `
-    SELECT 
-      u.user_id,
-      u.username,
-      u.email,
-      u.cc_category,
-      u.cc_rank,
-      u.cc_frequency,
-      u.cc_day,
-      u.name,
-      u.e_frequency,
-      ucc.challenge
-    FROM 
-      users u
-      JOIN users_code_challenges ucc ON ucc.user_id = u.user_id
-    WHERE cc_category IS NOT NULL
-    `
-  );
+  const { rows: users } = await db.query("SELECT * FROM users WHERE cc_category IS NOT NULL");
 
   for (const user of users) {
     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);

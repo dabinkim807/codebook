@@ -11,50 +11,60 @@ function Schedule(props) {
     ...props.currentUser
   });
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
+
+  const cc_inputs = [newSchedule.cc_category, newSchedule.cc_rank, newSchedule.cc_frequency, newSchedule.cc_day];
 
   const handleDifficultyChange = (e) => {
     e.preventDefault();
-    console.log(e.target.value)
-    setSuccessMessage("");
     setNewSchedule((newSchedule) => ({...newSchedule, cc_rank: e.target.value === "" ? null : e.target.value}));
-    console.log(e.target.value)
   }
   const handleCategoryChange = (e) => {
     e.preventDefault();
-    setSuccessMessage("");
     setNewSchedule((newSchedule) => ({...newSchedule, cc_category: e.target.value === "" ? null : e.target.value}));
-    console.log(e.target.value)
   }
   const handleFreqChange = (e) => {
     e.preventDefault();
-    setSuccessMessage("");
     setNewSchedule((newSchedule) => ({...newSchedule, cc_frequency: e.target.value === "" ? null : e.target.value}));
-    console.log(e.target.value)
   }
   const handleDayChange = (e) => {
     e.preventDefault();
-    setSuccessMessage("");
     setNewSchedule((newSchedule) => ({...newSchedule, cc_day: e.target.value === "" ? null : e.target.value}));
-    console.log(e.target.value)
   }
   const handleEmailFreqChange = (e) => {
     e.preventDefault();
-    setSuccessMessage("");
     setNewSchedule((newSchedule) => ({...newSchedule, e_frequency: e.target.value === "" ? null : e.target.value}));
-    console.log(e.target.value)
   }
 
   const handleSchedule = (e) => {
     e.preventDefault();
-    console.log(newSchedule);
-    setSuccessMessage("Success!");
+    setShowSuccess(false);
+    setErrorMessage("");
+    setShowInfo(false);
+
+    if (!(cc_inputs.every(x => x === null) || cc_inputs.every(x => x !== null))) {
+      setErrorMessage("Inputs must either be all completed or all empty");
+      return;
+    }
+    if (cc_inputs.every(x => x === null)) {
+      setShowInfo(true);
+    }
+
     postSchedule();
   }
 
   const postSchedule = async () => {
     if (user) {
-      console.log(user);
+      if (props.currentUser.cc_category ===  newSchedule.cc_category &&
+        props.currentUser.cc_rank ===  newSchedule.cc_rank &&
+        props.currentUser.cc_frequency === newSchedule.cc_frequency &&
+        props.currentUser.cc_day === newSchedule.cc_day &&
+        props.currentUser.e_frequency === newSchedule.e_frequency) {
+          setErrorMessage("Preferences unchanged");
+          setShowInfo(false);
+          return;
+      }
 
       const token = await getAccessTokenSilently();
       const response = await fetch("/api/schedule", {
@@ -74,8 +84,12 @@ function Schedule(props) {
       const data = await response.json();
       if (data.errorMessage !== undefined) {
         setErrorMessage(data.errorMessage);
-        setNewSchedule(props.currentUser);
+        setShowSuccess(false);
+        setShowInfo(false);
         return;
+      }
+      if (newSchedule.cc_category !== null) {
+        setShowSuccess(true);
       }
       props.setCurrentUser({...props.currentUser, ...data});
     }
@@ -105,7 +119,7 @@ function Schedule(props) {
 
         <label htmlFor="cc_frequency">Frequency</label>
         <select name="cc_frequency" id="cc_frequency" onChange={handleFreqChange} defaultValue={newSchedule.cc_frequency}>
-          <option value={null}>None</option>
+          <option value="">None</option>
           <option value="Every Week">Every Week</option>
         </select>
 
@@ -132,7 +146,8 @@ function Schedule(props) {
         <button type="submit" onClick={handleSchedule}>Schedule</button>
       </form>
       {errorMessage !== "" ? <Alert severity="error">{errorMessage}</Alert> : <></>}
-      {successMessage === "Success!" && newSchedule.cc_category !== null ? <Alert severity="success">Code challenge scheduled! Watch out for the email.</Alert> : <></>}
+      {showSuccess ? <Alert severity="success">Code challenge scheduled! Watch out for the email</Alert> : <></>}
+      {showInfo ? <Alert severity="info">Schedule has been cleared</Alert> : <></>}
     </div>
   )
 }

@@ -274,7 +274,7 @@ app.post('/api/user', jwtCheck, async (req, res) => {
 app.post('/api/schedule', jwtCheck, async (req, res) => {
   try {
     // frontend sends: cc_category, cc_rank, cc_frequency, cc_day, e_frequency
-    console.log("post schedule route")
+
     // if user tries to run Schedule route without going through sign up process (i.e. runs request through Postman), user does not exist in db
     const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
     if (users.length !== 1) {
@@ -287,19 +287,9 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
     // for simplicity, for now the user has to provide all fields *enforce in the frontend
     // but users can still use Postman to send invalid inputs that are not allowed by frontend
     // db will validate for me
-    let cc_inputs = [req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day];
-
-    console.log(cc_inputs);
-    for (const input of cc_inputs) {
-      console.log(typeof input)
-    }
+    const cc_inputs = [req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day];
 
     if (!(cc_inputs.every(x => x === null) || cc_inputs.every(x => x !== null))) {
-      // same thing as !inputs.every(x => x === null) && !inputs.every(x => x !== null)
-      console.log(cc_inputs);
-      
-
-
       return res.status(200).json({ errorMessage: "Inputs must either be all completed or all empty" });
     }
 
@@ -308,10 +298,7 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
       [req.auth.payload.sub, req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day, req.body.e_frequency]
     );
 
-    console.log("user preferences updated")
-
-    return res.status(200).json({ 
-      ...req.body, 
+    return res.status(200).json({
       validated: true,
       idExists: true
     });

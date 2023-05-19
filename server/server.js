@@ -350,13 +350,7 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
 //   }
 // });
 
-// scheduled job that sends automated emails every 24 hrs
-// cron.schedule("0 0 * * *", async function () {
-cron.schedule("* * * * *", async function () {
-  console.log("---------------------");
-  // console.log("running a task every 24 hrs");
-  console.log("running a task every min");
-
+const gradeCC = async () => {
   // check all users from users_code_challenges whose code challenges are "In Progress" (default)
   const { rows: users_cc_state } = await db.query(
     `
@@ -398,6 +392,15 @@ cron.schedule("* * * * *", async function () {
       await db.query("UPDATE users_code_challenges SET cc_state = 'Failed' WHERE user_id = $1", [user_cc.user_id]);
     }
   }
+};
+
+
+// scheduled job that sends automated emails every 24 hrs
+cron.schedule("0 0 * * *", async function () {
+  console.log("---------------------");
+  console.log("running a task every 24 hrs");
+
+  gradeCC();
 
   // check all users from users table where cc_category is not null (already required all cc preferences to be either all null or all not null) and questions are 'In Progress'
   // query for reminder emails ONLY

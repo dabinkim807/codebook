@@ -298,6 +298,12 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
       [req.auth.payload.sub, req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day, req.body.e_frequency]
     );
 
+    if (users[0].cc_category === null) {
+      await db.query(
+        "DELETE FROM users_code_challenges WHERE user_id = $1 AND cc_state = 'In Progress'", [req.auth.payload.sub]
+      );
+    }
+
     return res.status(200).json({
       validated: true,
       idExists: true

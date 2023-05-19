@@ -454,14 +454,7 @@ const sendReminderEmail = async () => {
   }
 };
 
-
-// scheduled job that sends automated emails every 24 hrs
-cron.schedule("0 0 * * *", async function () {
-  console.log("---------------------");
-  console.log("running a task every 24 hrs");
-
-  gradeCC();
-
+const sendNewCCEmail = async () => {
   // check all users from users table where cc_category is not null (already required all cc preferences to be either all null or all not null) and questions are 'In Progress'
   const { rows: users } = await db.query(
     `
@@ -502,10 +495,12 @@ cron.schedule("0 0 * * *", async function () {
       let new_deadline = new Date();
       new_deadline.setDate(new_deadline.getDate() + 7);
 
+
       // insert challenge id, cc_state to "In Progress" (default), and deadline in db
       await db.query(
         `INSERT INTO users_code_challenges(user_id, challenge, deadline) VALUES ($1, $2, $3)`,
       [user.user_id, random_question, new_deadline]);
+
 
       // send user email containing link to code challenge
       const main = async () => {
@@ -527,7 +522,16 @@ cron.schedule("0 0 * * *", async function () {
     
     } 
   }
+};
 
+
+// scheduled job that sends automated emails every 24 hrs
+cron.schedule("0 0 * * *", async function () {
+  console.log("---------------------");
+  console.log("running a task every 24 hrs");
+
+  gradeCC();
+  sendNewCCEmail();
   sendReminderEmail();
 });
 

@@ -298,6 +298,12 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
       [req.auth.payload.sub, req.body.cc_category, req.body.cc_rank, req.body.cc_frequency, req.body.cc_day, req.body.e_frequency]
     );
 
+    if (users[0].cc_category === null) {
+      await db.query(
+        "DELETE FROM users_code_challenges WHERE user_id = $1 AND cc_state = 'In Progress'", [req.auth.payload.sub]
+      );
+    }
+
     return res.status(200).json({
       validated: true,
       idExists: true
@@ -344,331 +350,220 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
 //   }
 // });
 
+
 // // scheduled job that sends automated emails every 24 hrs
 // cron.schedule("0 0 * * *", async function () {
 //   console.log("---------------------");
 //   console.log("running a task every 24 hrs");
 
-//   // check all users from users_code_challenges whose code challenges are "In Progress" (default)
-//   const { rows: users_cc_state } = await db.query(
-//     `
-//     SELECT 
-//       ucc.user_id,
-//       ucc.challenge,
-//       ucc.cc_state,
-//       ucc.deadline,
-//       u.username,
-//       u.email
-//     FROM 
-//       users_code_challenges ucc
-//       JOIN users u ON ucc.user_id = u.user_id
-//     WHERE cc_state = 'In Progress' 
-//     `
-//   );
-
-//   for (const user_cc of users_cc_state) {
-//     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user_cc.username}/code-challenges/completed`);
-//     const cw_data = await cw_response.json();
-//     let matched = false;
-
-//     for (const challenge of cw_data.data) {
-//       // if user has completed assigned code challenge,
-//       if (user_cc.challenge === challenge.id) {
-//         matched = true;
-//         // if user has completed assigned code challenge by the deadline, set challenge to passed
-//         if (Date.parse(challenge.completedAt) <= user_cc.deadline) {
-//           await db.query("UPDATE users_code_challenges SET cc_state = 'Passed' WHERE user_id = $1", [user_cc.user_id]);
-//           // otherwise, set challenge to failed
-//         } else {
-//           await db.query("UPDATE users_code_challenges SET cc_state = 'Failed' WHERE user_id = $1", [user_cc.user_id]);
-//         }
-//         break;
-//       }
-//     }
-//     // if user has not completed assigned code challenge and the deadline has passed, set challenge to failed
-//     if (!matched && Date.now() > user_cc.deadline) {
-//       await db.query("UPDATE users_code_challenges SET cc_state = 'Failed' WHERE user_id = $1", [user_cc.user_id]);
-//     }
-//   }
-
-//   // check all users from users table where cc_category is not null (already required all cc preferences to be either all null or all not null)
-//   const { rows: users } = await db.query(
-//     `
-//     SELECT 
-//       u.user_id,
-//       u.username,
-//       u.email,
-//       u.cc_category,
-//       u.cc_rank,
-//       u.cc_frequency,
-//       u.cc_day,
-//       u.name,
-//       u.e_frequency,
-//       ucc.challenge
-//     FROM 
-//       users u
-//       JOIN users_code_challenges ucc ON ucc.user_id = u.user_id
-//     WHERE cc_category IS NOT NULL
-//     `
-//   );
-
-//   for (const user of users) {
-//     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
-//     const cw_data = await cw_response.json();
-
-//     const convertDay = {
-//       Sunday: 0,
-//       Monday: 1,
-//       Tuesday: 2,
-//       Wednesday: 3,
-//       Thursday: 4,
-//       Friday: 5,
-//       Saturday: 6
-//     };
-
-//     // if cc_day === current day of the week, randomly assign users a cc from db that matches their preferences
-//     if (convertDay[user.cc_day] === new Date().getDay()) {
-//       const { rows: questions } = await db.query(
-//         'SELECT challenge FROM code_challenges WHERE category = $1 AND rank = $2',
-//       [user.cc_category, user.cc_rank]);
-
-//       let question_ids = questions.map(q => q.challenge);
-//       let done_ids = new Set(cw_data.data.map(q => q.id));
-//       let not_done_ids = question_ids.filter(q => !done_ids.has(q));
-
-//       let random_idx = Math.floor(Math.random() * not_done_ids.length);
-//       let random_question = not_done_ids[random_idx];
-//       let new_deadline = new Date();
-//       new_deadline.setDate(new_deadline.getDate() + 7);
-
-//       // insert challenge id, cc_state to "In Progress" (default), and deadline in db
-//       await db.query(
-//         `INSERT INTO users_code_challenges(user_id, challenge, deadline) VALUES ($1, $2, $3)`,
-//       [user.user_id, random_question, new_deadline]);
-
-//       // send user email containing link to code challenge
-//       const main = async () => {
-//         const options = {
-//           to: `${user.email}`,
-//           replyTo: 'techtonica.codebook@gmail.com',
-//           subject: 'CodeBook Code Challenge',
-//           text: `New coding challenge! Link to challenge: https://www.codewars.com/kata/${random_question}`,
-//           textEncoding: 'base64',
-//         };
-
-//         const messageId = await sendMail(options);
-//         return messageId;
-//       };
-
-//       main()
-//         .then((messageId) => console.log('Message sent successfully:', messageId))
-//         .catch((err) => console.error(err));
-      
-
-//     // if cc_day !== current day of the week and user is opted into reminders, send user reminder based on e_frequency (currently only 'Once a day, every day')
-//     } else if (user.e_frequency === 'Every Day') {
-//       const main = async () => {
-//         const options = {
-//           to: `${user.email}`,
-//           replyTo: 'techtonica.codebook@gmail.com',
-//           subject: 'REMINDER: Complete your scheduled code challenge',
-//           text: `Don't forget to solve your code challenge! Link to challenge: https://www.codewars.com/kata/${user.challenge}`,
-//           textEncoding: 'base64',
-//         };
-
-//         const messageId = await sendMail(options);
-//         return messageId;
-//       };
-
-//       main()
-//         .then((messageId) => console.log('Message sent successfully:', messageId))
-//         .catch((err) => console.error(err));
-//     }
-//   }
+//   gradeCC();
+//   sendNewCCEmail();
+//   sendReminderEmail();
 // });
+
+
+const gradeCC = async () => {
+  // check all users from users_code_challenges whose code challenges are "In Progress" (default)
+  const { rows: users_cc_state } = await db.query(
+    `
+    SELECT 
+      ucc.user_id,
+      ucc.challenge,
+      ucc.cc_state,
+      ucc.deadline,
+      u.username,
+      u.email
+    FROM 
+      users_code_challenges ucc
+      JOIN users u ON ucc.user_id = u.user_id
+    WHERE cc_state = 'In Progress' 
+    `
+  );
+
+  for (const user_cc of users_cc_state) {
+    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user_cc.username}/code-challenges/completed`);
+    const cw_data = await cw_response.json();
+    let matched = false;
+
+    for (const challenge of cw_data.data) {
+      // if user has completed assigned code challenge,
+      if (user_cc.challenge === challenge.id) {
+        matched = true;
+        // if user has completed assigned code challenge by the deadline, set challenge to passed
+        if (Date.parse(challenge.completedAt) <= user_cc.deadline) {
+          await db.query("UPDATE users_code_challenges SET cc_state = 'Passed' WHERE user_id = $1", [user_cc.user_id]);
+          // otherwise, set challenge to failed
+        } else {
+          await db.query("UPDATE users_code_challenges SET cc_state = 'Failed' WHERE user_id = $1", [user_cc.user_id]);
+        }
+        break;
+      }
+    }
+    // if user has not completed assigned code challenge and the deadline has passed, set challenge to failed
+    if (!matched && Date.now() > user_cc.deadline) {
+      await db.query("UPDATE users_code_challenges SET cc_state = 'Failed' WHERE user_id = $1", [user_cc.user_id]);
+    }
+  }
+};
+
+const convertDay = (day) => {
+  const days = {
+    Sunday: 0,
+    Monday: 1,
+    Tuesday: 2,
+    Wednesday: 3,
+    Thursday: 4,
+    Friday: 5,
+    Saturday: 6
+  };
+  return days[day];
+};
+
+const sendReminderEmail = async () => {
+  // check all users from users table where cc_category is not null (already required all cc preferences to be either all null or all not null) and questions are 'In Progress'
+  const { rows: users } = await db.query(
+    `
+    SELECT 
+      u.user_id,
+      u.username,
+      u.email,
+      u.cc_category,
+      u.cc_rank,
+      u.cc_frequency,
+      u.cc_day,
+      u.name,
+      u.e_frequency,
+      ucc.challenge
+    FROM 
+      users u
+      JOIN users_code_challenges ucc ON ucc.user_id = u.user_id
+    WHERE cc_category IS NOT NULL AND cc_state = 'In Progress'
+    `
+  );
+
+  for (const user of users) {
+    // if cc_day !== current day of the week and user is opted into reminders, send user reminder based on e_frequency (currently only 'Once a day, every day')
+    if ((convertDay(user.cc_day) !== new Date().getDay()) && (user.e_frequency === 'Every Day')) {
+      const main = async () => {
+        const options = {
+          to: `${user.email}`,
+          replyTo: 'techtonica.codebook@gmail.com',
+          subject: 'REMINDER: Complete your scheduled code challenge',
+          text: `Don't forget to solve your code challenge! Link to challenge: https://www.codewars.com/kata/${user.challenge}`,
+          textEncoding: 'base64',
+        };
+        const messageId = await sendMail(options);
+        return messageId;
+      };
+
+      main()
+        .then((messageId) => console.log('Message sent successfully:', messageId))
+        .catch((err) => console.error(err));
+    }
+  }
+};
+
+const sendNewCCEmail = async () => {
+  // check all users from users table where cc_category is not null (already required all cc preferences to be either all null or all not null) and questions are 'In Progress'
+  const { rows: users } = await db.query("SELECT * FROM users WHERE cc_category IS NOT NULL");
+
+  for (const user of users) {
+    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
+    const cw_data = await cw_response.json();
+
+    // if cc_day === current day of the week, randomly assign users a cc from db that matches their preferences
+    if (convertDay(user.cc_day) === new Date().getDay()) {
+      const { rows: questions } = await db.query(
+        'SELECT challenge FROM code_challenges WHERE category = $1 AND rank = $2',
+      [user.cc_category, user.cc_rank]);
+
+      let question_ids = questions.map(q => q.challenge);
+      let done_ids = new Set(cw_data.data.map(q => q.id));
+      let not_done_ids = question_ids.filter(q => !done_ids.has(q));
+
+      let random_idx = Math.floor(Math.random() * not_done_ids.length);
+      let random_question = not_done_ids[random_idx];
+      let new_deadline = new Date();
+      new_deadline.setDate(new_deadline.getDate() + 7);
+
+
+      // insert challenge id, cc_state to "In Progress" (default), and deadline in db
+      await db.query(
+        `INSERT INTO users_code_challenges(user_id, challenge, deadline) VALUES ($1, $2, $3)`,
+      [user.user_id, random_question, new_deadline]);
+
+
+      // send user email containing link to code challenge
+      const main = async () => {
+        const options = {
+          to: `${user.email}`,
+          replyTo: 'techtonica.codebook@gmail.com',
+          subject: 'CodeBook Code Challenge',
+          text: `New coding challenge! Link to challenge: https://www.codewars.com/kata/${random_question}`,
+          textEncoding: 'base64',
+        };
+
+        const messageId = await sendMail(options);
+        return messageId;
+      };
+
+      main()
+        .then((messageId) => console.log('Message sent successfully:', messageId))
+        .catch((err) => console.error(err));
+    
+    } 
+  }
+};
 
 
 
 // // ********* demo for final presentation *********
 
-// // scheduled job that validates users 
-// cron.schedule("* * * * *", async function () {
-//   console.log("---------------------");
-//   console.log("running a task every minute");
+// scheduled job that validates users 
+cron.schedule("* * * * *", async function () {
+  console.log("---------------------");
+  console.log("running a task every minute");
 
-//   // check all users from users table who aren't validated yet
-//   const { rows: users } = await db.query("SELECT * FROM users WHERE validated = false");
+  // check all users from users table who aren't validated yet
+  const { rows: users } = await db.query("SELECT * FROM users WHERE validated = false");
 
-//   for (const user of users) {
-//     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
-//     const cw_data = await cw_response.json();
+  for (const user of users) {
+    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
+    const cw_data = await cw_response.json();
 
-//     for (const challenge of cw_data.data) {
-//       // if user has completed assigned test_challenge,
-//       if (user.test_challenge === challenge.id) {
-//         // if 10 min have not passed since test_created, set user to validated === true, show user Scheduling Page when they next log in
-//         if (Date.parse(challenge.completedAt) - user.test_created <= 600000) {
-//           await db.query("UPDATE users SET validated = true WHERE user_id = $1", [user.user_id]);
-//           return;
-//         // otherwise, if 10 min have passed, delete user from db, show user Sign Up component
-//         } else {
-//           await db.query("DELETE FROM users WHERE user_id = $1", [user.user_id]);
-//           return;
-//         }
-//       } 
-//     }
-//     // otherwise, if the user has not completed test challenge,
-//     // if 10 min have passed, delete user from db, show user Sign Up component
-//     if (Date.now() - user.test_created > 600000) {
-//       await db.query("DELETE FROM users WHERE user_id = $1", [user.user_id]);
-//       return;
-//     } 
-//     // if 10 min haven't passed yet since test_created, do nothing / show user Validation Page
-//   }
-// });
+    for (const challenge of cw_data.data) {
+      // if user has completed assigned test_challenge,
+      if (user.test_challenge === challenge.id) {
+        // if 10 min have not passed since test_created, set user to validated === true, show user Scheduling Page when they next log in
+        if (Date.parse(challenge.completedAt) - user.test_created <= 600000) {
+          await db.query("UPDATE users SET validated = true WHERE user_id = $1", [user.user_id]);
+          return;
+        // otherwise, if 10 min have passed, delete user from db, show user Sign Up component
+        } else {
+          await db.query("DELETE FROM users WHERE user_id = $1", [user.user_id]);
+          return;
+        }
+      } 
+    }
+    // otherwise, if the user has not completed test challenge,
+    // if 10 min have passed, delete user from db, show user Sign Up component
+    if (Date.now() - user.test_created > 600000) {
+      await db.query("DELETE FROM users WHERE user_id = $1", [user.user_id]);
+      return;
+    } 
+    // if 10 min haven't passed yet since test_created, do nothing / show user Validation Page
+  }
+});
 
-// // scheduled job that sends automated emails 
-// cron.schedule("* * * * *", async function () {
-//   console.log("---------------------");
-//   console.log("running a task every minute");
+// scheduled job that sends automated emails 
+cron.schedule("* * * * *", async function () {
+  console.log("---------------------");
+  console.log("running a task every minute");
 
-//   // check all users from users_code_challenges whose code challenges are "In Progress" (default)
-//   const { rows: users_cc_state } = await db.query(
-//     `
-//     SELECT 
-//       ucc.user_id,
-//       ucc.challenge,
-//       ucc.cc_state,
-//       ucc.deadline,
-//       u.username,
-//       u.email
-//     FROM 
-//       users_code_challenges ucc
-//       JOIN users u ON ucc.user_id = u.user_id
-//     WHERE cc_state = 'In Progress' 
-//     `
-//   );
-
-//   for (const user_cc of users_cc_state) {
-//     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user_cc.username}/code-challenges/completed`);
-//     const cw_data = await cw_response.json();
-//     let matched = false;
-
-//     for (const challenge of cw_data.data) {
-//       // if user has completed assigned code challenge,
-//       if (user_cc.challenge === challenge.id) {
-//         matched = true;
-//         // if user has completed assigned code challenge by the deadline, set challenge to passed
-//         if (Date.parse(challenge.completedAt) <= user_cc.deadline) {
-//           await db.query("UPDATE users_code_challenges SET cc_state = 'Passed' WHERE user_id = $1", [user_cc.user_id]);
-//           // otherwise, set challenge to failed
-//         } else {
-//           await db.query("UPDATE users_code_challenges SET cc_state = 'Failed' WHERE user_id = $1", [user_cc.user_id]);
-//         }
-//         break;
-//       }
-//     }
-//     // if user has not completed assigned code challenge and the deadline has passed, set challenge to failed
-//     if (!matched && Date.now() > user_cc.deadline) {
-//       await db.query("UPDATE users_code_challenges SET cc_state = 'Failed' WHERE user_id = $1", [user_cc.user_id]);
-//     }
-//   }
-
-//   // check all users from users table where cc_category is not null (already required all cc preferences to be either all null or all not null)
-//   const { rows: users } = await db.query(
-//     `
-//     SELECT 
-//       u.user_id,
-//       u.username,
-//       u.email,
-//       u.cc_category,
-//       u.cc_rank,
-//       u.cc_frequency,
-//       u.cc_day,
-//       u.name,
-//       u.e_frequency,
-//       ucc.challenge
-//     FROM 
-//       users u
-//       JOIN users_code_challenges ucc ON ucc.user_id = u.user_id
-//     WHERE cc_category IS NOT NULL
-//     `
-//   );
-
-//   for (const user of users) {
-//     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
-//     const cw_data = await cw_response.json();
-
-//     const convertDay = {
-//       Sunday: 0,
-//       Monday: 1,
-//       Tuesday: 2,
-//       Wednesday: 3,
-//       Thursday: 4,
-//       Friday: 5,
-//       Saturday: 6
-//     };
-
-//     // if cc_day === current day of the week, randomly assign users a cc from db that matches their preferences
-//     if (convertDay[user.cc_day] === new Date().getDay()) {
-//       const { rows: questions } = await db.query(
-//         'SELECT challenge FROM code_challenges WHERE category = $1 AND rank = $2',
-//       [user.cc_category, user.cc_rank]);
-
-//       let question_ids = questions.map(q => q.challenge);
-//       let done_ids = new Set(cw_data.data.map(q => q.id));
-//       let not_done_ids = question_ids.filter(q => !done_ids.has(q));
-
-//       let random_idx = Math.floor(Math.random() * not_done_ids.length);
-//       let random_question = not_done_ids[random_idx];
-//       let new_deadline = new Date();
-//       new_deadline.setDate(new_deadline.getDate() + 7);
-
-//       // insert challenge id, cc_state to "In Progress" (default), and deadline in db
-//       await db.query(
-//         `INSERT INTO users_code_challenges(user_id, challenge, deadline) VALUES ($1, $2, $3)`,
-//       [user.user_id, random_question, new_deadline]);
-
-//       // send user email containing link to code challenge
-//       const main = async () => {
-//         const options = {
-//           to: `${user.email}`,
-//           replyTo: 'techtonica.codebook@gmail.com',
-//           subject: 'CodeBook Code Challenge',
-//           text: `New coding challenge! Link to challenge: https://www.codewars.com/kata/${random_question}`,
-//           textEncoding: 'base64',
-//         };
-
-//         const messageId = await sendMail(options);
-//         return messageId;
-//       };
-
-//       main()
-//         .then((messageId) => console.log('Message sent successfully:', messageId))
-//         .catch((err) => console.error(err));
-      
-
-//     // if cc_day !== current day of the week and user is opted into reminders, send user reminder based on e_frequency (currently only 'Once a day, every day')
-//     } else if (user.e_frequency === 'Every Day') {
-//       const main = async () => {
-//         const options = {
-//           to: `${user.email}`,
-//           replyTo: 'techtonica.codebook@gmail.com',
-//           subject: 'REMINDER: Complete your scheduled code challenge',
-//           text: `Don't forget to solve your code challenge! Link to challenge: https://www.codewars.com/kata/${user.challenge}`,
-//           textEncoding: 'base64',
-//         };
-
-//         const messageId = await sendMail(options);
-//         return messageId;
-//       };
-
-//       main()
-//         .then((messageId) => console.log('Message sent successfully:', messageId))
-//         .catch((err) => console.error(err));
-//     }
-//   }
-// });
+  gradeCC();
+  sendNewCCEmail();
+  sendReminderEmail();
+});
 
 
 app.listen(PORT, () => {

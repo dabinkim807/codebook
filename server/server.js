@@ -394,6 +394,19 @@ const gradeCC = async () => {
   }
 };
 
+const convertDay = (day) => {
+  const days = {
+    Sunday: 0,
+    Monday: 1,
+    Tuesday: 2,
+    Wednesday: 3,
+    Thursday: 4,
+    Friday: 5,
+    Saturday: 6
+  };
+  return days[day];
+};
+
 const sendReminderEmail = async () => {
   // check all users from users table where cc_category is not null (already required all cc preferences to be either all null or all not null) and questions are 'In Progress'
   const { rows: users } = await db.query(
@@ -420,18 +433,8 @@ const sendReminderEmail = async () => {
     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
     await cw_response.json();
 
-    const convertDay = {
-      Sunday: 0,
-      Monday: 1,
-      Tuesday: 2,
-      Wednesday: 3,
-      Thursday: 4,
-      Friday: 5,
-      Saturday: 6
-    };
-
     // if cc_day !== current day of the week and user is opted into reminders, send user reminder based on e_frequency (currently only 'Once a day, every day')
-    if ((convertDay[user.cc_day] === new Date().getDay()) && (user.e_frequency === 'Every Day')) {
+    if ((convertDay(user.cc_day) === new Date().getDay()) && (user.e_frequency === 'Every Day')) {
       const main = async () => {
         const options = {
           to: `${user.email}`,
@@ -484,18 +487,8 @@ cron.schedule("0 0 * * *", async function () {
     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
     const cw_data = await cw_response.json();
 
-    const convertDay = {
-      Sunday: 0,
-      Monday: 1,
-      Tuesday: 2,
-      Wednesday: 3,
-      Thursday: 4,
-      Friday: 5,
-      Saturday: 6
-    };
-
     // if cc_day === current day of the week, randomly assign users a cc from db that matches their preferences
-    if (convertDay[user.cc_day] === new Date().getDay()) {
+    if (convertDay(user.cc_day) === new Date().getDay()) {
       const { rows: questions } = await db.query(
         'SELECT challenge FROM code_challenges WHERE category = $1 AND rank = $2',
       [user.cc_category, user.cc_rank]);

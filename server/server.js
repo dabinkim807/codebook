@@ -315,7 +315,12 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
 
 
 // scheduled job that validates users every 10 min
-cron.schedule(process.env.INTERVAL_VALIDATION, async function () {
+const interval_validation = process.env.INTERVAL_VALIDATION;
+const convertEnvV = {
+  interval_validation: "*/10 * * * *"
+}
+
+cron.schedule(convertEnvV.interval_validation, async function () {
   console.log("---------------------");
   console.log("running a task every 10 min");
 
@@ -352,7 +357,12 @@ cron.schedule(process.env.INTERVAL_VALIDATION, async function () {
 
 
 // scheduled job that sends automated emails every 24 hrs
-cron.schedule(process.env.INTERVAL_EMAIL, async function () {
+const interval_email = process.env.INTERVAL_EMAIL;
+const convertEnvE = {
+  interval_email: "0 0 * * *"
+}
+
+cron.schedule(convertEnvE.interval_email, async function () {
   console.log("---------------------");
   console.log("running a task every 24 hrs");
 

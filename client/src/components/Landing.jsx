@@ -1,13 +1,13 @@
-import LoginButton from './auth0/LoginButton';
+import SignupButton from './auth0/SignupButton';
 
 
 function Landing() {
   return (
     <div data-testid="landing" className="Landing">
       <h1>CodeBook</h1>
-      <span>[slogan]</span>
-      <span>Book your code challenge today!</span>
-      <LoginButton />
+      <span>Keep yourself accountable.</span>
+      <span>Schedule your coding challenge today!</span>
+      <SignupButton />
     </div>
   )
 }

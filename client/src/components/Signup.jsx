@@ -15,7 +15,7 @@ function Signup(props) {
       const token = await getAccessTokenSilently();
       // const response = await fetch("/api/user", {
       const data = {username: username};
-      const response = await axios.post("/api/user", {
+      const response = await axios.post("/api/user", data, {
         method: "POST",
         headers: {
           "authorization": `BEARER ${token}`,
@@ -31,12 +31,12 @@ function Signup(props) {
       // }
       // props.setCurrentUser({...props.currentUser, ...data});
 
-      if (response.errorMessage !== undefined) {
-        setErrorMessage(response.errorMessage);
+      if (response.data.errorMessage !== undefined) {
+        setErrorMessage(response.data.errorMessage);
         setUsername("");
         return;
       }
-      props.setCurrentUser({...props.currentUser, ...response});
+      props.setCurrentUser({...props.currentUser, ...response.data});
     }
   };
   

@@ -26,11 +26,11 @@ function Validation(props) {
       // }
       // props.setCurrentUser({...props.currentUser, ...data});
 
-      if (response.errorMessage !== undefined) {
-        setErrorMessage(response.errorMessage);
+      if (response.data.errorMessage !== undefined) {
+        setErrorMessage(response.data.errorMessage);
         return;
       }
-      props.setCurrentUser({...props.currentUser, ...response});
+      props.setCurrentUser({...props.currentUser, ...response.data});
     }
   };
 

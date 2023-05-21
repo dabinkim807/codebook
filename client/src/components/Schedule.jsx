@@ -76,7 +76,7 @@ function Schedule(props) {
         cc_day: newSchedule.cc_day,
         e_frequency: newSchedule.e_frequency
       };
-      const response = await axios.post("/api/schedule", {
+      const response = await axios.post("/api/schedule", data, {
         method: "POST",
         headers: {
           "authorization": `BEARER ${token}`,
@@ -102,8 +102,8 @@ function Schedule(props) {
       // }
       // props.setCurrentUser({...props.currentUser, ...data});
 
-      if (response.errorMessage !== undefined) {
-        setErrorMessage(response.errorMessage);
+      if (response.data.errorMessage !== undefined) {
+        setErrorMessage(response.data.errorMessage);
         setShowSuccess(false);
         setShowInfo(false);
         return;
@@ -111,7 +111,7 @@ function Schedule(props) {
       if (newSchedule.cc_category !== null) {
         setShowSuccess(true);
       }
-      props.setCurrentUser({...props.currentUser, ...response});
+      props.setCurrentUser({...props.currentUser, ...response.data});
     }
   };
 

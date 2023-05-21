@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import Alert from '@mui/material/Alert';
@@ -67,23 +68,42 @@ function Schedule(props) {
       }
 
       const token = await getAccessTokenSilently();
-      const response = await fetch("/api/schedule", {
+      // const response = await fetch("/api/schedule", {
+      const data = {
+        cc_category: newSchedule.cc_category,
+        cc_rank: newSchedule.cc_rank,
+        cc_frequency: newSchedule.cc_frequency,
+        cc_day: newSchedule.cc_day,
+        e_frequency: newSchedule.e_frequency
+      };
+      const response = await axios.post("/api/schedule", {
         method: "POST",
         headers: {
           "authorization": `BEARER ${token}`,
           "Content-type": "application/JSON"
         },
-        body: JSON.stringify({
-          cc_category: newSchedule.cc_category,
-          cc_rank: newSchedule.cc_rank,
-          cc_frequency: newSchedule.cc_frequency,
-          cc_day: newSchedule.cc_day,
-          e_frequency: newSchedule.e_frequency
-        })
+        // body: JSON.stringify({
+        //   cc_category: newSchedule.cc_category,
+        //   cc_rank: newSchedule.cc_rank,
+        //   cc_frequency: newSchedule.cc_frequency,
+        //   cc_day: newSchedule.cc_day,
+        //   e_frequency: newSchedule.e_frequency
+        // })
       });
-      const data = await response.json();
-      if (data.errorMessage !== undefined) {
-        setErrorMessage(data.errorMessage);
+      // const data = await response.json();
+      // if (data.errorMessage !== undefined) {
+      //   setErrorMessage(data.errorMessage);
+      //   setShowSuccess(false);
+      //   setShowInfo(false);
+      //   return;
+      // }
+      // if (newSchedule.cc_category !== null) {
+      //   setShowSuccess(true);
+      // }
+      // props.setCurrentUser({...props.currentUser, ...data});
+
+      if (response.errorMessage !== undefined) {
+        setErrorMessage(response.errorMessage);
         setShowSuccess(false);
         setShowInfo(false);
         return;
@@ -91,7 +111,7 @@ function Schedule(props) {
       if (newSchedule.cc_category !== null) {
         setShowSuccess(true);
       }
-      props.setCurrentUser({...props.currentUser, ...data});
+      props.setCurrentUser({...props.currentUser, ...response});
     }
   };
 

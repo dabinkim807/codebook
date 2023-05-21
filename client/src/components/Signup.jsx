@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import Alert from '@mui/material/Alert';
@@ -12,21 +13,30 @@ function Signup(props) {
   const postUser = async () => {
     if (user) {
       const token = await getAccessTokenSilently();
-      const response = await fetch("/api/user", {
+      // const response = await fetch("/api/user", {
+      const data = {username: username};
+      const response = await axios.post("/api/user", {
         method: "POST",
         headers: {
           "authorization": `BEARER ${token}`,
           "Content-type": "application/JSON"
         },
-        body: JSON.stringify({username: username})
+        // body: JSON.stringify({username: username})
       });
-      const data = await response.json();
-      if (data.errorMessage !== undefined) {
-        setErrorMessage(data.errorMessage);
+      // const data = await response.json();
+      // if (data.errorMessage !== undefined) {
+      //   setErrorMessage(data.errorMessage);
+      //   setUsername("");
+      //   return;
+      // }
+      // props.setCurrentUser({...props.currentUser, ...data});
+
+      if (response.errorMessage !== undefined) {
+        setErrorMessage(response.errorMessage);
         setUsername("");
         return;
       }
-      props.setCurrentUser({...props.currentUser, ...data});
+      props.setCurrentUser({...props.currentUser, ...response});
     }
   };
   

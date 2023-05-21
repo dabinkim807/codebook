@@ -1,4 +1,5 @@
 import { useAuth0 } from "@auth0/auth0-react";
+import Avatar from '@mui/material/Avatar';
 
 
 function Profile() {
@@ -10,9 +11,7 @@ function Profile() {
   return (
     isAuthenticated && (
       <div data-testid="profile">
-        <img src={user.picture} alt={user.name} />
-        <h2>{user.name}</h2>
-        <p>{user.email}</p>
+        <Avatar alt={user.name} src={user.picture} sx={{ width: 45, height: 45 }} />
       </div>
     )
   );

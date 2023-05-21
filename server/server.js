@@ -314,6 +314,11 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
     }
 
     return res.status(200).json({
+      cc_category: req.body.cc_category,
+      cc_rank: req.body.cc_rank,
+      cc_frequency: req.body.cc_frequency,
+      cc_day: req.body.cc_day,
+      e_frequency: req.body.e_frequency,
       validated: true,
       idExists: true
     });

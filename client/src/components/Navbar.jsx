@@ -50,7 +50,7 @@ function MyNavBar() {
               </IconButton>
             </Box>
 
-            <Box sx={{ flexGrow: 0 }}>
+            <Box sx={{ flexGrow: 0, display: { xs: 'none', md: 'flex' }  }}>
               <IconButton sx={{ p: 0 }}>
                 <Profile />
               </IconButton>

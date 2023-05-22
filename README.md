@@ -13,7 +13,7 @@ Project is live on [Render](https://server-zqle.onrender.com/)!
 * [User Flow](#user-flow)
 * [Database Schema](#database-schema)
 * [System Design](#system-design)
-<!-- * [Wireframes](#wireframes) -->
+* [Screenshots](#screenshots)
 * [Design Considerations](#design-considerations)
 * [Alternatives](#alternatives)
 * [Technologies](#technologies)
@@ -127,9 +127,12 @@ Note: Client server will be running on http://localhost:5173 and server will be 
 
 <br></br>
 
-<!-- ## Wireframes
-![Wireframes](./images/wireframes.jpg) -->
+## Screenshots
+<p align="center"><img src="client/src/assets/landing.png" alt="User flow" width="900" /></p>
+<br></br>
+<p align="center"><img src="client/src/assets/schedule.png" alt="User flow" width="900" /></p>
 
+<br></br>
 
 ## Design Considerations
 

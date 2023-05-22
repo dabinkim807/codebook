@@ -7,7 +7,7 @@ form {
   flex-direction: column;
   align-items: center;
   text-align: left;
-  margin-top: 3em;
+  margin-top: 2em;
   flex: 1;
 }
 
@@ -18,20 +18,31 @@ form {
 .main-page {
   margin: 20px;
   position: absolute;
-  top: 200%;
+  top: 150%;
   width: 87%;
 }
 
 .landing {
   margin: auto;
-  /* margin-left: -40px; */
   text-align: center;
 }
 
-p {
+p, label {
   font-size: 1rem;
 }
 
 #logo_w {
   max-width: 100%
+}
+
+label {
+  margin-right: 12px;
+}
+
+.schedule {
+  margin-left: 1em; 
+}
+
+#submit {
+  margin-top: 30px;
 }

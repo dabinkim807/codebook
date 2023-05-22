@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import Alert from '@mui/material/Alert';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 
 
 function Schedule(props) {
@@ -96,10 +98,10 @@ function Schedule(props) {
   };
 
   return (
-    <div className="Schedule">
-      <h1>Schedule</h1>
+    <div className="schedule">
+      <Typography style={{fontWeight: 'bold', fontSize: "2.1rem", marginBottom: "15px"}} gutterBottom>Schedule</Typography>
       <form>
-        <h2>Code Challenge Preferences</h2>
+        <Typography style={{fontWeight: 'bold', fontSize: "1.2rem", marginBottom: "20px"}} gutterBottom>Challenge Preferences</Typography>
 
         <label htmlFor="cc_rank">Difficulty</label>
         <select name="cc_rank" id="cc_rank" onChange={handleDifficultyChange} defaultValue={newSchedule.cc_rank}>
@@ -109,20 +111,20 @@ function Schedule(props) {
           <option value="Professional">Professional</option>
           <option value="Expert">Expert</option>
         </select>
-
+        <br></br>
         <label htmlFor="cc_category">Category</label>
         <select name="cc_category" id="cc_category" onChange={handleCategoryChange} defaultValue={newSchedule.cc_category}>
           <option value="">None</option>
           <option value="Algorithms">Algorithms</option>
           <option value="Data Structures">Data Structures</option>
         </select>
-
+        <br></br>
         <label htmlFor="cc_frequency">Frequency</label>
         <select name="cc_frequency" id="cc_frequency" onChange={handleFreqChange} defaultValue={newSchedule.cc_frequency}>
           <option value="">None</option>
           <option value="Every Week">Every Week</option>
         </select>
-
+        <br></br>
         <label htmlFor="cc_day">Day</label>
         <select name="cc_day" id="cc_day" onChange={handleDayChange} defaultValue={newSchedule.cc_day}>
           <option value="">None</option>
@@ -134,16 +136,27 @@ function Schedule(props) {
           <option value="Friday">Friday</option>
           <option value="Saturday">Saturday</option>
         </select>
-
-        <h2>Email Preferences</h2>
+        <br></br>
+        <br></br>
+        
+        <Typography style={{fontWeight: 'bold', fontSize: "1.2rem", marginBottom: "20px"}} gutterBottom>Email Preferences</Typography>
 
         <label htmlFor="e_frequency">Frequency</label>
         <select name="e_frequency" id="e_frequency" onChange={handleEmailFreqChange} defaultValue={newSchedule.e_frequency}>
           <option value="">None</option>
           <option value="Every Day">Every Day</option>
         </select>
-
-        <button type="submit" onClick={handleSchedule}>Schedule</button>
+        <br></br>
+        <Button 
+          id="submit"
+          type="submit"
+          onClick={handleSchedule}
+          variant="contained" 
+          color="primary"
+          size="medium"
+        >
+        Schedule
+        </Button>
       </form>
       {errorMessage !== "" ? <Alert severity="error">{errorMessage}</Alert> : <></>}
       {showSuccess ? <Alert severity="success">Code challenge scheduled! Watch out for the email</Alert> : <></>}

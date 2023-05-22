@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 
@@ -13,18 +14,25 @@ function Validation(props) {
   const getDone = async () => {
     if (user) {
       const token = await getAccessTokenSilently();
-      const response = await fetch("/api/done", {
+      // const response = await fetch("/api/done", {
+      const response = await axios.get("/api/done", {
         method: "GET",
         headers: {
           "authorization": `BEARER ${token}`
         },
       });
-      const data = await response.json();
-      if (data.errorMessage !== undefined) {
-        setErrorMessage(data.errorMessage);
+      // const data = await response.json();
+      // if (data.errorMessage !== undefined) {
+      //   setErrorMessage(data.errorMessage);
+      //   return;
+      // }
+      // props.setCurrentUser({...props.currentUser, ...data});
+
+      if (response.data.errorMessage !== undefined) {
+        setErrorMessage(response.data.errorMessage);
         return;
       }
-      props.setCurrentUser({...props.currentUser, ...data});
+      props.setCurrentUser({...props.currentUser, ...response.data});
     }
   };
 

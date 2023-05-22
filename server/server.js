@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const path = require('path');
+const axios = require('axios'); 
 const db = require('./db/db-connection.js');
 const { auth } = require('express-oauth2-jwt-bearer');
 const cron = require('node-cron');
@@ -73,8 +74,10 @@ app.get('/api/user', jwtCheck, async (req, res) => {
 
     // if user is in db but is not validated, test_challenge has already been assigned
     // call CW API, check test_challenge is fully passed (completed within time limit)
-    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
-    const cw_data = await cw_response.json();
+    // const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
+    const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
+    // const cw_data = await cw_response.json();
+    const cw_data = cw_response.data;
 
     for (const challenge of cw_data.data) {
       // if user completed test within time limit, set validated === true, 
@@ -154,9 +157,11 @@ app.get('/api/done', jwtCheck, async (req, res) => {
     }
 
     // stretch goal: to handle multiple pages of results, create a function that calls API for length of pages
-    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
-    const cw_data = await cw_response.json();
-    console.log(cw_data);
+    // const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
+    const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
+    // const cw_data = await cw_response.json();
+    const cw_data = cw_response.data;
+    // console.log(cw_data);
 
     for (const challenge of cw_data.data) {
       // if user completed test within time limit, set validated === true, 
@@ -220,8 +225,10 @@ app.post('/api/user', jwtCheck, async (req, res) => {
     }
 
     // call Codewars List of CC API
-    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${req.body.username}/code-challenges/completed`);
-    const cw_data = await cw_response.json();
+    // const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${req.body.username}/code-challenges/completed`);
+    const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${req.body.username}/code-challenges/completed`);
+    // const cw_data = await cw_response.json();
+    const cw_data = cw_response.data;
 
     // if username does not exist in Codewars API, cw_data.success === false
       // keep user at Sign Up component
@@ -236,17 +243,21 @@ app.post('/api/user', jwtCheck, async (req, res) => {
       q: `user_id:"${req.auth.payload.sub}"`,
       search_engine: 'v3'
     });
-    const auth_response = await fetch(`https://dev-y8l2e8exqiihl4qw.us.auth0.com/api/v2/users?${params}`, {
+    // const auth_response = await fetch(`https://dev-y8l2e8exqiihl4qw.us.auth0.com/api/v2/users?${params}`, {
+    const auth_response = await axios.get(`https://dev-y8l2e8exqiihl4qw.us.auth0.com/api/v2/users?${params}`, {
       method: "GET",
       headers: {
         "authorization": `BEARER ${token}`
       }
     });
-    const auth_data = await auth_response.json();
 
-    if (auth_data.error) {
-      return res.status(400).json({ errorMessage: `${auth_data.message}` });
+    if (auth_response.error) {
+      return res.status(400).json({ errorMessage: `${auth_response.message}` });
     }
+    
+    // const auth_data = await auth_response.json();
+    // console.log(auth_data);
+    const auth_data = auth_response.data;
 
     const { rows: questions } = await db.query("SELECT challenge FROM code_challenges WHERE rank = 'Beginner'");
 
@@ -311,6 +322,11 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
     }
 
     return res.status(200).json({
+      cc_category: req.body.cc_category,
+      cc_rank: req.body.cc_rank,
+      cc_frequency: req.body.cc_frequency,
+      cc_day: req.body.cc_day,
+      e_frequency: req.body.e_frequency,
       validated: true,
       idExists: true
     });
@@ -334,9 +350,11 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
 //   // check all users from users table who aren't validated yet
 //   const { rows: users } = await db.query("SELECT * FROM users WHERE validated = false");
 
-//   for (const user of users) {
-//     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
-//     const cw_data = await cw_response.json();
+//  for (const user of users) {
+//    // const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
+//    const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
+//    // const cw_data = await cw_response.json();
+//    const cw_data = cw_response.data;
 
 //     for (const challenge of cw_data.data) {
 //       // if user has completed assigned test_challenge,
@@ -393,8 +411,10 @@ const gradeCC = async () => {
   );
 
   for (const user_cc of users_cc_state) {
-    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user_cc.username}/code-challenges/completed`);
-    const cw_data = await cw_response.json();
+    // const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user_cc.username}/code-challenges/completed`);
+    const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${user_cc.username}/code-challenges/completed`);
+    // const cw_data = await cw_response.json();
+    const cw_data = cw_response.data;
     let matched = false;
 
     for (const challenge of cw_data.data) {
@@ -480,8 +500,10 @@ const sendNewCCEmail = async () => {
   const { rows: users } = await db.query("SELECT * FROM users WHERE cc_category IS NOT NULL");
 
   for (const user of users) {
-    const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
-    const cw_data = await cw_response.json();
+    // const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
+    const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
+    // const cw_data = await cw_response.json();
+    const cw_data = cw_response.data;
 
     // if cc_day === current day of the week, randomly assign users a cc from db that matches their preferences
     if (convertDay(user.cc_day) === new Date().getDay()) {

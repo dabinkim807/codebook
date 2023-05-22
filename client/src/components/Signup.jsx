@@ -83,11 +83,9 @@ function Signup(props) {
           Submit
           </Button>
 
-          {/* <button type="submit" onClick={handleSubmit}>Submit</button> */}
         </div>
 
       </form>
-      
     </div>
   )
 }

@@ -57,11 +57,15 @@ label {
   align-items: center;
 }
 
-#submit {
+#submit, #done {
   display: block;
   margin-left: 11px;
 }
 
 #username {
   height: 18%;
+}
+
+#done {
+  margin-top: 15px;
 }

@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+
 
 function Validation(props) {
   // currentUser={currentUser} setCurrentUser={setCurrentUser}
@@ -33,13 +37,28 @@ function Validation(props) {
 
   return (
     <div className="Validation">
-      <h1>Validation</h1>
-      <p>Thank you for signing up to CodeBook!</p> 
-      <p>To confirm your account, please complete the Codewars challenge below within 10 minutes.</p>
+      <Typography style={{fontWeight: 'bold', fontSize: "2.1rem", marginBottom: "25px"}} gutterBottom>Validation</Typography>
+      <p>Thank you for signing up, {user.given_name}!</p>       
+      <p>To confirm your account, please complete <a href={"https://www.codewars.com/kata/" + props.currentUser.test_challenge} target="_blank">this Codewars challenge</a> within <b><u>10 minutes</u></b>.</p>
       <p>Click on the "DONE" button once you've passed the challenge!</p>
-      <a href={"https://www.codewars.com/kata/" + props.currentUser.test_challenge} target="_blank">Code Challenge</a>
-      <button type="submit" onClick={handleDone}>Done</button>
+      {/* <button type="submit" onClick={handleDone}>Done</button> */}
       {errorMessage !== "" ? <Alert severity="error">{errorMessage}</Alert> : <></>}
+      
+      <br></br>
+
+      <div id="button-container">
+        <Button 
+          id="done"
+          type="submit"
+          onClick={handleDone}
+          variant="contained" 
+          color="primary"
+          size="medium"
+        >
+        Done
+        </Button>
+
+      </div>
     </div>
   )
 }

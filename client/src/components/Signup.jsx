@@ -9,7 +9,6 @@ import TextField from '@mui/material/TextField';
 
 
 function Signup(props) {
-  // currentUser={currentUser} setCurrentUser={setCurrentUser}
   const { user, getAccessTokenSilently } = useAuth0();
 
   const [username, setUsername] = useState("");
@@ -17,8 +16,6 @@ function Signup(props) {
 
   const postUser = async () => {
     if (user) {
-      console.log(user);
-
       const token = await getAccessTokenSilently();
       const response = await fetch("/api/user", {
         method: "POST",

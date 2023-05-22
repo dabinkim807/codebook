@@ -21,7 +21,6 @@ const token = process.env.MANAGEMENT_API_ACCESS_TOKEN;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(REACT_BUILD_DIR));
-// app.use(jwtCheck);   // applies authorization requirement to access all routes; can be applied to individual routes
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(REACT_BUILD_DIR, "index.html"));
@@ -34,7 +33,7 @@ app.get('/authorized', jwtCheck, (req, res) => {
 
 // this route proves that all req.auth.payload comes from accessToken sent from frontend
 app.get('/unauthorized', (req, res) => {
-  console.log(req.auth);
+  // console.log(req.auth);
   res.send('Unsecured Resource');
 });
 
@@ -220,21 +219,18 @@ app.post('/api/user', jwtCheck, async (req, res) => {
       return res.status(200).json({ errorMessage: `Username ${req.body.username} already exists` });
     }
 
-    //// call Codewars List of CC API
+    // call Codewars List of CC API
     const cw_response = await fetch(`https://www.codewars.com/api/v1/users/${req.body.username}/code-challenges/completed`);
     const cw_data = await cw_response.json();
 
     // if username does not exist in Codewars API, cw_data.success === false
-    //   keep user at Sign Up component
+      // keep user at Sign Up component
     // otherwise cw_data.success === undefined
     if (cw_data.success === false) {
-
-      console.log("post route is working")
-
       return res.status(200).json({ errorMessage: `${req.body.username} is not a valid Codewars username` });
     }
 
-    //// call Auth0 API
+    // call Auth0 API
     // jwtCheck checks the accessToken that the user passes to backend thru frontend request via getAccessTokensSilently and provides the user data automatically
     const params = new URLSearchParams({
       q: `user_id:"${req.auth.payload.sub}"`,
@@ -252,30 +248,15 @@ app.post('/api/user', jwtCheck, async (req, res) => {
       return res.status(400).json({ errorMessage: `${auth_data.message}` });
     }
 
-    console.log(auth_data);
-
-    console.log("retrieved data from auth0")
-
     const { rows: questions } = await db.query("SELECT challenge FROM code_challenges WHERE rank = 'Beginner'");
-    console.log(questions);
-    console.log(questions[0].challenge);
 
     let question_ids = questions.map(q => q.challenge);
-    // console.log(question_ids);
     let done_ids = new Set(cw_data.data.map(q => q.id));
     let not_done_ids = question_ids.filter(q => !done_ids.has(q));
 
     let random_idx = Math.floor(Math.random() * not_done_ids.length);
     let random_question = not_done_ids[random_idx];
     let time_now = new Date();
-
-    console.log("about to make db request")
-    console.log("auth0 id", req.auth.payload.sub)
-    console.log("CW username", req.body.username)
-    console.log("auth0 email", auth_data[0].email)
-    console.log("random q", random_question)
-    console.log("time", time_now)
-    console.log("auth0 full name", auth_data[0].name)
     
     await db.query(
       `

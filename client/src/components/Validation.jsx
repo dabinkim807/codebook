@@ -3,11 +3,9 @@ import { useAuth0 } from "@auth0/auth0-react";
 
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
 
 
 function Validation(props) {
-  // currentUser={currentUser} setCurrentUser={setCurrentUser}
   const { user, getAccessTokenSilently } = useAuth0();
 
   const [errorMessage, setErrorMessage] = useState("");

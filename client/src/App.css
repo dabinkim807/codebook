@@ -1,5 +1,6 @@
 .App {
   background-color: white;
+  position: relative;
 }
 
 form {
@@ -14,8 +15,12 @@ form {
   max-width: 50%;
 }
 
-/* #loginButton {
-  display: block;
-  width: 15%;
-  height: 15%;
-} */
+.main-page {
+  margin: 20px;
+  position: absolute;
+  top: 150%;
+}
+
+p {
+  font-size: 1rem;
+}

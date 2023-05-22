@@ -7,7 +7,7 @@ function SignupButton() {
 
   return (
     <Button 
-      data-testid="login" 
+      data-testid="signup" 
       onClick={() => loginWithRedirect()} 
       variant="contained" 
       color="primary"

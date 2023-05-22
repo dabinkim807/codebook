@@ -39,7 +39,7 @@ function MyNavBar() {
               />
             </Box>
 
-            <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+            <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
               <IconButton
                 size="large"
                 aria-label="account of current user"
@@ -49,8 +49,6 @@ function MyNavBar() {
               >
               </IconButton>
             </Box>
-            <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            </Box>
 
             <Box sx={{ flexGrow: 0 }}>
               <IconButton sx={{ p: 0 }}>
@@ -58,7 +56,9 @@ function MyNavBar() {
               </IconButton>
             </Box>
             <Box sx={{ flexGrow: 0 }}>
-              {!isAuthenticated ? (<LoginButton />) : (<LogoutButton />)}
+              <Container >
+                {!isAuthenticated ? (<LoginButton />) : (<LogoutButton />)}
+              </Container>
             </Box>
           </Toolbar>
         </Container>

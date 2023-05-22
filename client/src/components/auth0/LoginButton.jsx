@@ -21,11 +21,13 @@ function LoginButton() {
     <ThemeProvider theme={theme}>
       <Button 
         data-testid="login" 
+        id="loginButton"
         onClick={() => loginWithRedirect()} 
         variant="contained" 
         color="secondary"
+        size="small"
       >
-      Log In
+      Login
       </Button>
     </ThemeProvider>
   );

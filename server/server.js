@@ -7,6 +7,7 @@ const db = require('./db/db-connection.js');
 const { auth } = require('express-oauth2-jwt-bearer');
 const cron = require('node-cron');
 const sendMail = require('./gmail/gmail.js');
+// const htmlEmail = require('./gmail/email.html');
 
 const app = express();
 const REACT_BUILD_DIR = path.join(__dirname, "..", "client", "dist");
@@ -378,15 +379,15 @@ app.post('/api/schedule', jwtCheck, async (req, res) => {
 // });
 
 
-// // scheduled job that sends automated emails every 24 hrs
-// cron.schedule(convertEnv[process.env.INTERVAL_EMAIL], async function () {
-//   console.log("---------------------");
-//   console.log("running a task every 24 hrs");
+// scheduled job that sends automated emails every 24 hrs
+cron.schedule(convertEnv[process.env.INTERVAL_EMAIL], async function () {
+  console.log("---------------------");
+  console.log("running a task every 24 hrs");
 
-//   gradeCC();
-//   sendNewCCEmail();
-//   sendReminderEmail();
-// });
+  gradeCC();
+  sendNewCCEmail();
+  sendReminderEmail();
+});
 
 
 const gradeCC = async () => {
@@ -470,6 +471,8 @@ const sendReminderEmail = async () => {
     `
   );
 
+  // console.log(htmlEmail);
+
   for (const user of users) {
     // if cc_day !== current day of the week and user is opted into reminders, send user reminder based on e_frequency (currently only 'Once a day, every day')
     if ((convertDay(user.cc_day) !== new Date().getDay()) && (user.e_frequency === 'Every Day')) {
@@ -479,7 +482,8 @@ const sendReminderEmail = async () => {
           replyTo: 'techtonica.codebook@gmail.com',
           subject: 'REMINDER: Complete your scheduled code challenge',
           text: `Don't forget to solve your code challenge! Link to challenge: https://www.codewars.com/kata/${user.challenge}`,
-          textEncoding: 'base64',
+          // html: htmlEmail,
+          textEncoding: 'base64'
         };
         const messageId = await sendMail(options);
         return messageId;

@@ -207,7 +207,7 @@ function Schedule(props) {
         <br></br>
 
         {errorMessage !== "" ? <Alert severity="error">{errorMessage}</Alert> : <></>}
-        {showSuccess ? <Alert severity="success">Code challenge scheduled! Watch out for the email</Alert> : <></>}
+        {showSuccess ? <Alert severity="success">Code challenge scheduled! Look out for the email</Alert> : <></>}
         {showInfo ? <Alert severity="info">Schedule has been cleared</Alert> : <></>}
 
         <Button 

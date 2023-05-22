@@ -41,7 +41,7 @@ function Validation(props) {
       <p>Thank you for signing up, {user.given_name}!</p>       
       <p>To confirm your account, please complete <a href={"https://www.codewars.com/kata/" + props.currentUser.test_challenge} target="_blank">this Codewars challenge</a> within <b><u>10 minutes</u></b>.</p>
       <p>Click on the "DONE" button once you've passed the challenge!</p>
-      {/* <button type="submit" onClick={handleDone}>Done</button> */}
+
       {errorMessage !== "" ? <Alert severity="error">{errorMessage}</Alert> : <></>}
       
       <br></br>

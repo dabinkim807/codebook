@@ -1,10 +1,15 @@
 import axios from "axios";
 import { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
+
 import Alert from '@mui/material/Alert';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+
 
 function Signup(props) {
-  // currentUser={currentUser} setCurrentUser={setCurrentUser}
   const { user, getAccessTokenSilently } = useAuth0();
 
   const [username, setUsername] = useState("");
@@ -53,22 +58,41 @@ function Signup(props) {
 
   return (
     <div className="Signup">
-      <h1>Sign up</h1>
+      <Typography style={{fontWeight: 'bold', fontSize: "2.1rem", marginBottom: "25px"}} gutterBottom>Sign Up</Typography>
       <p>If you don't have a Codewars account, click <a href="https://www.codewars.com/" target="_blank">here</a> to sign up!</p>
       <p>Please enter your Codewars username below.</p>
       <form>
-        <label>Codewars username: </label>
-        <input
-          type="text"
-          id="username"
-          name="username"
-          required
-          value={username}
-          onChange={handleUsernameChange}
-        />
-        <button type="submit" onClick={handleSubmit}>Submit</button>
+
+        <Box sx={{ '& > :not(style)': { m: 1, width: '25ch' } }} noValidate autoComplete="off">
+          <TextField 
+            id="username" 
+            label="Codewars username" 
+            required
+            variant="outlined" 
+            value={username}
+            onChange={handleUsernameChange}
+          />
+        </Box>
+
+        <br></br>
+
+        {errorMessage !== "" ? <Alert severity="error">{errorMessage}</Alert> : <></>}
+
+        <div id="button-container">
+          <Button 
+            id="submit"
+            type="submit"
+            onClick={handleSubmit}
+            variant="contained" 
+            color="primary"
+            size="medium"
+          >
+          Submit
+          </Button>
+
+        </div>
+
       </form>
-      {errorMessage !== "" ? <Alert severity="error">{errorMessage}</Alert> : <></>}
     </div>
   )
 }

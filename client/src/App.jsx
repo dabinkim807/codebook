@@ -39,10 +39,12 @@ function App() {
   return (
     <div className="App">
       <MyNavBar />
-      {!isAuthenticated ? <Landing /> : <></>}
-      {isAuthenticated && !currentUser.idExists ? <Signup currentUser={currentUser} setCurrentUser={setCurrentUser}/> : <></>}
-      {isAuthenticated && currentUser.idExists && !currentUser.validated ? <Validation currentUser={currentUser} setCurrentUser={setCurrentUser} /> : <></>}
-      {isAuthenticated && currentUser.idExists && currentUser.validated ? <Schedule currentUser={currentUser} setCurrentUser={setCurrentUser} /> : <></>}
+      <div className='main-page'>
+        {!isAuthenticated ? <Landing /> : <></>}
+        {isAuthenticated && !currentUser.idExists ? <Signup currentUser={currentUser} setCurrentUser={setCurrentUser}/> : <></>}
+        {isAuthenticated && currentUser.idExists && !currentUser.validated ? <Validation currentUser={currentUser} setCurrentUser={setCurrentUser} /> : <></>}
+        {isAuthenticated && currentUser.idExists && currentUser.validated ? <Schedule currentUser={currentUser} setCurrentUser={setCurrentUser} /> : <></>}
+      </div>
     </div>
   )
 }

@@ -1,37 +1,55 @@
-import Container from 'react-bootstrap/Container';
-import Navbar from 'react-bootstrap/Navbar';
-import Nav from 'react-bootstrap/Nav';
+import * as React from 'react';
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
+import IconButton from '@mui/material/IconButton';
+import Container from '@mui/material/Container';
+import Logo from '../assets/logo_rm.png'; 
+
 import LoginButton from './auth0/LoginButton';
 import LogoutButton from './auth0/LogoutButton';
 import Profile from './auth0/Profile';
 import { useAuth0 } from "@auth0/auth0-react";
 
-
-function MyNavBar(props) {
+function MyNavBar() {
   const { isAuthenticated } = useAuth0();
 
   return (
-    <>
-    <Navbar data-testid="navbar" bg="dark" variant="dark" sticky="top">
-      <Container>
-        <Navbar.Brand href="/">
-        <img
-          // src={Logo}
-          height="30"
-          className="d-lg-inline-block"
-          // alt="React Bootstrap logo"
-        />
-        </Navbar.Brand>
-        <Nav.Link >Your Link</Nav.Link>
-        <Navbar.Toggle />
-        <Navbar.Collapse className="justify-content-end">
-          <Profile />
-          {!isAuthenticated ? (<LoginButton />) : (<LogoutButton />)}
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
-    </>
-  );
-};
+    <AppBar position="static">
+      <Container maxWidth="xl">
+        <Toolbar disableGutters>
+          <Box sx={{ flexGrow: 0 }}>
+            <img
+              id="logo"
+              src={Logo}
+              alt="CodeBook logo black bg"
+            />
+          </Box>
 
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+            <IconButton
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              color="inherit"
+            >
+            </IconButton>
+          </Box>
+
+          <Box sx={{ flexGrow: 0, display: { xs: 'none', md: 'flex' }  }}>
+            <IconButton sx={{ p: 0 }}>
+              <Profile />
+            </IconButton>
+          </Box>
+          <Box sx={{ flexGrow: 0 }}>
+            <Container >
+              {!isAuthenticated ? (<LoginButton />) : (<LogoutButton />)}
+            </Container>
+          </Box>
+        </Toolbar>
+      </Container>
+    </AppBar>
+  );
+}
 export default MyNavBar;

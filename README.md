@@ -1,4 +1,8 @@
-# CodeBook
+<h1 align="center">
+  <br>
+<img src="/client/src/assets/logo_w.png" alt="MoMMLogo" width="400">
+  <br>
+</h1>
 
 
 ## Table of Contents
@@ -145,3 +149,5 @@ To Do:
 
 ## Status
 Currently in development.
+
+

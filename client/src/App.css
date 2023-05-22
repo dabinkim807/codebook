@@ -18,9 +18,18 @@ form {
 .main-page {
   margin: 20px;
   position: absolute;
-  top: 150%;
+  top: 300%;
+  width: 87%;
+}
+
+.landing {
+  margin: auto;
+  /* margin-left: -40px; */
+  text-align: center;
 }
 
 p {
   font-size: 1rem;
 }
+
+

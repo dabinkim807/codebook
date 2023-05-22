@@ -211,7 +211,7 @@ function Schedule(props) {
         {showInfo ? <Alert severity="info">Schedule has been cleared</Alert> : <></>}
 
         <Button 
-          id="submit"
+          id="button_schedule"
           type="submit"
           onClick={handleSchedule}
           variant="contained" 

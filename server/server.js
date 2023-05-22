@@ -209,7 +209,12 @@ app.post('/api/user', jwtCheck, async (req, res) => {
 
     // if username already exists in db and another user id tries to submit the same username, send error
     const { rows: username } = await db.query("SELECT * FROM users WHERE username = $1", [req.body.username]);
+    console.log("-------", username)
+    console.log(username.length)
     if (username.length === 1) {
+
+      console.log("post route is working");
+
       return res.status(200).json({ errorMessage: `Username ${req.body.username} already exists` });
     }
 
@@ -221,6 +226,9 @@ app.post('/api/user', jwtCheck, async (req, res) => {
     //   keep user at Sign Up component
     // otherwise cw_data.success === undefined
     if (cw_data.success === false) {
+
+      console.log("post route is working")
+
       return res.status(200).json({ errorMessage: `${req.body.username} is not a valid Codewars username` });
     }
 
@@ -237,11 +245,14 @@ app.post('/api/user', jwtCheck, async (req, res) => {
       }
     });
     const auth_data = await auth_response.json();
-    // console.log(auth_data);
+    // add error handling for external requests
+    console.log(auth_data);
+
+    console.log("retrieved data from auth0")
 
     const { rows: questions } = await db.query("SELECT challenge FROM code_challenges WHERE rank = 'Beginner'");
-    // console.log(questions);
-    // console.log(questions[0].challenge);
+    console.log(questions);
+    console.log(questions[0].challenge);
 
     let question_ids = questions.map(q => q.challenge);
     // console.log(question_ids);
@@ -252,6 +263,14 @@ app.post('/api/user', jwtCheck, async (req, res) => {
     let random_question = not_done_ids[random_idx];
     let time_now = new Date();
 
+    console.log("about to make db request")
+    console.log("auth0 id", req.auth.payload.sub)
+    console.log("CW username", req.body.username)
+    console.log("auth0 email", auth_data[0].email)
+    console.log("random q", random_question)
+    console.log("time", time_now)
+    console.log("auth0 full name", auth_data[0].name)
+    
     await db.query(
       `
       INSERT INTO users (user_id, username, email, test_challenge, test_created, name) 

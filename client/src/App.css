@@ -46,6 +46,22 @@ label {
   margin-left: 0.5em; 
 }
 
-#submit {
+#button_schedule, #submit {
   margin-top: 30px;
+}
+
+#button-container {
+  display: block;
+  margin: auto;
+  width: 40%;
+  align-items: center;
+}
+
+#submit {
+  display: block;
+  margin-left: 11px;
+}
+
+#username {
+  height: 18%;
 }

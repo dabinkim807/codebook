@@ -1,15 +1,17 @@
 <h1 align="center">
-  <br>
+  <br></br>
 <img src="/client/src/assets/logo_w.png" alt="MoMMLogo" width="400">
-  <br>
 </h1>
 
+
+Project is live on [Render](https://server-zqle.onrender.com/)!
+<br></br>
 
 ## Table of Contents
 * [Introduction](#introduction)
 * [Installation](#installation)
-<!-- * [User Flow](#user-flow) -->
-<!-- * [Database Schema](#database-schema) -->
+* [User Flow](#user-flow)
+* [Database Schema](#database-schema)
 * [System Design](#system-design)
 <!-- * [Wireframes](#wireframes) -->
 * [Design Considerations](#design-considerations)
@@ -65,42 +67,65 @@ Step 5: Start the program!
 Note: Client server will be running on http://localhost:5173 and server will be running on http://localhost:8080.
 
 
-<!-- ## User Flow
-![User Flow](./images/user-flow.jpg) -->
+## User Flow
+<p align="center"><img src="client/src/assets/user_flow.png" alt="User flow" width="650" /></p>
 
 
-<!-- ## Database Schema
-![Database Schema](./images/db-schema.jpg) -->
+## Database Schema
+<p align="center"><img src="client/src/assets/db_schema.png" alt="Database schema" width="900" /></p>
 
 
 ## System Design
 
 ### Set-up & Validation
 1. The user will open the app and see a landing page where they are prompted to sign-in.
+<br></br>
 2. The user will sign-in through Auth0, which will currently only provide the option to connect to Google accounts, due to the project's scope limitations. If they are a new user, they will be directed to the validation page. If they are a returning user, they will be directed to the scheduling page.
+<br></br>
 3. On the validation page, the user will be prompted to either create a Codewars account if they do not have one already and/or submit their existing Codewars username to the app via a submit button.
+<br></br>
 4. The backend will first validate the submitted username against existing users in the users table. If the user does not exist in the database, the backend will then validate the user against existing users in Codewars by calling the Codewars API and fetching user data.
+<br></br>
 5. Codewars provides a Users API and Code Challenges API. To get user data and a list of a user's total completed code challenges, a username will be passed as parameter in the HTTP request. To get all code challenge data, a code challenge ID will be passed as parameter in the HTTP request.
+<br></br>
 6. Once the user has submitted their Codewars username, the app will make a call to Codewars' Users API to access the user's total completed code challenges.
+<br></br>
 7. The app will select a random, beginner-level, hard-coded code challenge from the database and check that the code challenge ID does not exist in the user's total completed code challenges.
+<br></br>
 8. The validation page will then prompt the user to complete the challenge via an external link to Codewars. The purpose of this test is to validate that the user is truly the rightful owner of the Codewars username they have submitted.
+<br></br>
 9. To limit the possibility of the user cheating (getting the true owner of the Codewars account to solve the problem for them), a time limit of 10 minutes will be enforced from the moment the user clicks on the submit button.
+<br></br>
 10. Once the time limit has passed, the backend will call the Users API again to verify whether the user's list of total completed challenges has been updated to include the test.
+<br></br>
 11. If the user's list of total completed challenges is updated successfully, the user is most likely valid. The user will be marked as validated and will then be able to access the app's scheduling page.
+<br></br>
 12. If at any point between steps 6-12 the user is invalid or they have failed to pass the test within the designated time limit, the user will be left as not validated and will be prompted to resubmit their Codewars username and restart the validation process.
+    <br></br>
     1. Since the first step in the validation process is to check whether the user is an existing user in the database, a user who has failed the validation process will be treated like a new user.
+    <br></br>
     2. Users can make an unlimited amount of sign-up attempts.
+    <br></br>
     3. A scheduled job will periodically delete any users who are not validated and who have exceeded the 10-minute deadline to complete the test
+
+<br></br>
 
 ### Scheduling Code Challenges
 1. On the scheduling page, the user will be able to choose the difficulty level and topic of their code challenges and how frequently they will be received (e.g. one code challenge per week for 1 month).
+<br></br>
 2. The user will also be able to opt into receiving reminder emails to solve their code challenges, and if so, how often they would like to be reminded.
+<br></br>
 3. All user preferences will be stored in the database. A scheduled job will do the following:
+    <br></br>
     1. Randomly select a code challenge that matches the user's preferences and is not currently in their list of total completed challenges.
+    <br></br>
     2. Send the user emails with links to their code challenges, based on the user's preferences.
+    <br></br>
     3. Send the user reminder emails based on the user's preferences.
+    <br></br>
     4. Mark user's assigned code challenge as passed if user completes challenge successfully within the deadline or failed if the user has not completed the challenge successfully by the deadline.
 
+<br></br>
 
 <!-- ## Wireframes
 ![Wireframes](./images/wireframes.jpg) -->
@@ -138,16 +163,21 @@ So why was Codewars chosen instead?
 * Vite v4.2.0
 
 
+## API References
+* [Auth0 Authentication API](https://auth0.com/docs/api/authentication)
+* [Auth0 Management API](https://auth0.com/docs/api/management/v2)
+* [Codewars: List of Code Challenges API](https://dev.codewars.com/#list-completed-challenges)
+* [Gmail API](https://developers.google.com/gmail/api/guides)
+
+
 ## Features
 * Choose code challenge category, difficulty, and frequency
 * Choose whether you want to receive reminder emails, and how often
-
-To Do:
-* Add friends and join classes
-* See your friends' and classmates' progress!
 
 
 ## Status
 Currently in development.
 
+
+<p align="right">(<a href="#introduction">back to top</a>)</p>
 

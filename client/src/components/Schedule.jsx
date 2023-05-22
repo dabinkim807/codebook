@@ -1,8 +1,14 @@
 import { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
+
 import Alert from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 
 
 function Schedule(props) {
@@ -20,23 +26,23 @@ function Schedule(props) {
 
   const handleDifficultyChange = (e) => {
     e.preventDefault();
-    setNewSchedule((newSchedule) => ({...newSchedule, cc_rank: e.target.value === "" ? null : e.target.value}));
+    setNewSchedule((newSchedule) => ({...newSchedule, cc_rank: e.target.value === "None" ? null : e.target.value}));
   }
   const handleCategoryChange = (e) => {
     e.preventDefault();
-    setNewSchedule((newSchedule) => ({...newSchedule, cc_category: e.target.value === "" ? null : e.target.value}));
+    setNewSchedule((newSchedule) => ({...newSchedule, cc_category: e.target.value === "None" ? null : e.target.value}));
   }
   const handleFreqChange = (e) => {
     e.preventDefault();
-    setNewSchedule((newSchedule) => ({...newSchedule, cc_frequency: e.target.value === "" ? null : e.target.value}));
+    setNewSchedule((newSchedule) => ({...newSchedule, cc_frequency: e.target.value === "None" ? null : e.target.value}));
   }
   const handleDayChange = (e) => {
     e.preventDefault();
-    setNewSchedule((newSchedule) => ({...newSchedule, cc_day: e.target.value === "" ? null : e.target.value}));
+    setNewSchedule((newSchedule) => ({...newSchedule, cc_day: e.target.value === "None" ? null : e.target.value}));
   }
   const handleEmailFreqChange = (e) => {
     e.preventDefault();
-    setNewSchedule((newSchedule) => ({...newSchedule, e_frequency: e.target.value === "" ? null : e.target.value}));
+    setNewSchedule((newSchedule) => ({...newSchedule, e_frequency: e.target.value === "None" ? null : e.target.value}));
   }
 
   const handleSchedule = (e) => {
@@ -100,53 +106,106 @@ function Schedule(props) {
   return (
     <div className="schedule">
       <Typography style={{fontWeight: 'bold', fontSize: "2.1rem", marginBottom: "15px"}} gutterBottom>Schedule</Typography>
+     
       <form>
         <Typography style={{fontWeight: 'bold', fontSize: "1.2rem", marginBottom: "20px"}} gutterBottom>Challenge Preferences</Typography>
 
-        <label htmlFor="cc_rank">Difficulty</label>
-        <select name="cc_rank" id="cc_rank" onChange={handleDifficultyChange} defaultValue={newSchedule.cc_rank}>
-          <option value="">None</option>
-          <option value="Beginner">Beginner</option>
-          <option value="Intermediate">Intermediate</option>
-          <option value="Professional">Professional</option>
-          <option value="Expert">Expert</option>
-        </select>
+        <Box sx={{ minWidth: 100 }}>
+          <FormControl fullWidth>
+            <InputLabel id="cc_rank">Difficulty</InputLabel>
+            <Select
+              labelId="cc_rank"
+              id="cc_rank"
+              defaultValue={newSchedule.cc_rank}
+              label="cc_rank"
+              onChange={handleDifficultyChange}
+            >
+              <MenuItem value="None">None</MenuItem>
+              <MenuItem value="Beginner">Beginner</MenuItem>
+              <MenuItem value="Intermediate">Intermediate</MenuItem>
+              <MenuItem value="Professional">Professional</MenuItem>
+              <MenuItem value="Expert">Expert</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
         <br></br>
-        <label htmlFor="cc_category">Category</label>
-        <select name="cc_category" id="cc_category" onChange={handleCategoryChange} defaultValue={newSchedule.cc_category}>
-          <option value="">None</option>
-          <option value="Algorithms">Algorithms</option>
-          <option value="Data Structures">Data Structures</option>
-        </select>
+        <Box sx={{ minWidth: 100 }}>
+          <FormControl fullWidth>
+            <InputLabel id="cc_category">Category</InputLabel>
+            <Select
+              labelId="cc_category"
+              id="cc_category"
+              defaultValue={newSchedule.cc_category}
+              label="cc_category"
+              onChange={handleCategoryChange}
+            >
+              <MenuItem value="None">None</MenuItem>
+              <MenuItem value="Algorithms">Algorithms</MenuItem>
+              <MenuItem value="Data Structures">Data Structures</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
         <br></br>
-        <label htmlFor="cc_frequency">Frequency</label>
-        <select name="cc_frequency" id="cc_frequency" onChange={handleFreqChange} defaultValue={newSchedule.cc_frequency}>
-          <option value="">None</option>
-          <option value="Every Week">Every Week</option>
-        </select>
+        <Box sx={{ minWidth: 100 }}>
+          <FormControl fullWidth>
+            <InputLabel id="cc_frequency">Frequency</InputLabel>
+            <Select
+              labelId="cc_frequency"
+              id="cc_frequency"
+              defaultValue={newSchedule.cc_frequency}
+              label="cc_frequency"
+              onChange={handleFreqChange}
+            >
+              <MenuItem value="None">None</MenuItem>
+              <MenuItem value="Every Week">Every Week</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
         <br></br>
-        <label htmlFor="cc_day">Day</label>
-        <select name="cc_day" id="cc_day" onChange={handleDayChange} defaultValue={newSchedule.cc_day}>
-          <option value="">None</option>
-          <option value="Sunday">Sunday</option>
-          <option value="Monday">Monday</option>
-          <option value="Tuesday">Tuesday</option>
-          <option value="Wednesday">Wednesday</option>
-          <option value="Thursday">Thursday</option>
-          <option value="Friday">Friday</option>
-          <option value="Saturday">Saturday</option>
-        </select>
+        <Box sx={{ minWidth: 100 }}>
+          <FormControl fullWidth>
+            <InputLabel id="cc_day">Day</InputLabel>
+            <Select
+              labelId="cc_day"
+              id="cc_day"
+              defaultValue={newSchedule.cc_day}
+              label="cc_day"
+              onChange={handleDayChange}
+            >
+              <MenuItem value="None">None</MenuItem>
+              <MenuItem value="Sunday">Sunday</MenuItem>
+              <MenuItem value="Monday">Monday</MenuItem>
+              <MenuItem value="Tuesday">Tuesday</MenuItem>
+              <MenuItem value="Wednesday">Wednesday</MenuItem>
+              <MenuItem value="Thursday">Thursday</MenuItem>
+              <MenuItem value="Friday">Friday</MenuItem>
+              <MenuItem value="Saturday">Saturday</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
         <br></br>
         <br></br>
         
         <Typography style={{fontWeight: 'bold', fontSize: "1.2rem", marginBottom: "20px"}} gutterBottom>Email Preferences</Typography>
 
-        <label htmlFor="e_frequency">Frequency</label>
-        <select name="e_frequency" id="e_frequency" onChange={handleEmailFreqChange} defaultValue={newSchedule.e_frequency}>
-          <option value="">None</option>
-          <option value="Every Day">Every Day</option>
-        </select>
+        <Box sx={{ minWidth: 100 }}>
+          <FormControl fullWidth>
+            <InputLabel id="e_frequency">Frequency</InputLabel>
+            <Select
+              labelId="e_frequency"
+              id="e_frequency"
+              defaultValue={newSchedule.e_frequency}
+              label="e_frequency"
+              onChange={handleEmailFreqChange}
+            >
+              <MenuItem value="None">None</MenuItem>
+              <MenuItem value="Every Day">Every Day</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+
         <br></br>
+
         <Button 
           id="submit"
           type="submit"
@@ -158,6 +217,7 @@ function Schedule(props) {
         Schedule
         </Button>
       </form>
+
       {errorMessage !== "" ? <Alert severity="error">{errorMessage}</Alert> : <></>}
       {showSuccess ? <Alert severity="success">Code challenge scheduled! Watch out for the email</Alert> : <></>}
       {showInfo ? <Alert severity="info">Schedule has been cleared</Alert> : <></>}

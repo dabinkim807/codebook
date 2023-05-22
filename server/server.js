@@ -481,7 +481,7 @@ const sendReminderEmail = async () => {
           to: `${user.email}`,
           replyTo: 'techtonica.codebook@gmail.com',
           subject: 'REMINDER: Complete your scheduled code challenge',
-          text: `Don't forget to solve your code challenge! Link to challenge: https://www.codewars.com/kata/${user.challenge}`,
+          text: `Hi ${user.name}! Don't forget to solve your code challenge! Link to challenge: https://www.codewars.com/kata/${user.challenge}`,
           // html: htmlEmail,
           textEncoding: 'base64'
         };
@@ -534,7 +534,7 @@ const sendNewCCEmail = async () => {
           to: `${user.email}`,
           replyTo: 'techtonica.codebook@gmail.com',
           subject: 'CodeBook Code Challenge',
-          text: `New coding challenge! Link to challenge: https://www.codewars.com/kata/${random_question}`,
+          text: `Hi ${user.name}! Here's your new coding challenge! Link to challenge: https://www.codewars.com/kata/${random_question}`,
           textEncoding: 'base64',
         };
 

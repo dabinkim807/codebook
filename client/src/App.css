@@ -10,6 +10,6 @@ form {
   flex: 1;
 }
 
-/* #landingLogin {
-  background-color: black !important;
-} */
+#logo {
+  max-width: 40%;
+}

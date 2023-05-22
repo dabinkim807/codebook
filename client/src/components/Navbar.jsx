@@ -3,9 +3,9 @@ import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import Logo from '../assets/Logo_nbg.png'; 
 
 import LoginButton from './auth0/LoginButton';
 import LogoutButton from './auth0/LogoutButton';
@@ -31,24 +31,13 @@ function MyNavBar() {
       <AppBar position="static">
         <Container maxWidth="xl">
           <Toolbar disableGutters>
-            {/* <h3>CodeBook</h3> */}
-            <Typography
-              variant="h5"
-              noWrap
-              component="a"
-              href="/"
-              sx={{
-                mr: 2,
-                display: { xs: 'none', md: 'flex' },
-                fontFamily: 'monospace',
-                fontWeight: 700,
-                letterSpacing: '.3rem',
-                color: 'inherit',
-                textDecoration: 'none',
-              }}
-            >
-              CodeBook
-            </Typography>
+            <Box sx={{ flexGrow: 0 }}>
+              <img
+                id="logo"
+                src={Logo}
+                alt="CodeBook logo"
+              />
+            </Box>
 
             <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
               <IconButton
@@ -66,8 +55,10 @@ function MyNavBar() {
             <Box sx={{ flexGrow: 0 }}>
               <IconButton sx={{ p: 0 }}>
                 <Profile />
-                {!isAuthenticated ? (<LoginButton />) : (<LogoutButton />)}
               </IconButton>
+            </Box>
+            <Box sx={{ flexGrow: 0 }}>
+              {!isAuthenticated ? (<LoginButton />) : (<LogoutButton />)}
             </Box>
           </Toolbar>
         </Container>

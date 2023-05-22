@@ -214,9 +214,6 @@ app.post('/api/user', jwtCheck, async (req, res) => {
     // if username already exists in db and another user id tries to submit the same username, send error
     const { rows: username } = await db.query("SELECT * FROM users WHERE username = $1", [req.body.username]);
     
-    console.log("-------", username)
-    console.log(username.length)
-    
     if (username.length === 1) {
 
       console.log("post route is working");

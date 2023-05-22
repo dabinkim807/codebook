@@ -17,6 +17,8 @@ function Signup(props) {
 
   const postUser = async () => {
     if (user) {
+      console.log(user);
+
       const token = await getAccessTokenSilently();
       const response = await fetch("/api/user", {
         method: "POST",
@@ -67,10 +69,10 @@ function Signup(props) {
 
         <br></br>
 
-        
+        {errorMessage !== "" ? <Alert severity="error">{errorMessage}</Alert> : <></>}
 
         <div id="button-container">
-          {/* <Button 
+          <Button 
             id="submit"
             type="submit"
             onClick={handleSubmit}
@@ -79,13 +81,13 @@ function Signup(props) {
             size="medium"
           >
           Submit
-          </Button> */}
+          </Button>
 
-          <button type="submit" onClick={handleSubmit}>Submit</button>
+          {/* <button type="submit" onClick={handleSubmit}>Submit</button> */}
         </div>
 
       </form>
-      {errorMessage !== "" ? <Alert severity="error">{errorMessage}</Alert> : <></>}
+      
     </div>
   )
 }

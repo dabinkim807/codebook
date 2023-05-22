@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Container from '@mui/material/Container';
-import Logo from '../assets/Logo_nbg.png'; 
+import Logo from '../assets/logo_rm.png'; 
 
 import LoginButton from './auth0/LoginButton';
 import LogoutButton from './auth0/LogoutButton';
@@ -22,7 +22,7 @@ function MyNavBar() {
             <img
               id="logo"
               src={Logo}
-              alt="CodeBook logo"
+              alt="CodeBook logo black bg"
             />
           </Box>
 

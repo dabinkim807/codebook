@@ -8,16 +8,27 @@ const CLIENT_ID = import.meta.env.VITE_AUTH0_CLIENT_ID;
 const IDENTIFIER = import.meta.env.VITE_IDENTIFIER;
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
+
 const theme = createTheme({
   palette: {
+    mode: 'light',
     primary: {
-      main: "#212121",
+      main: '#000000',
     },
     secondary: {
       main: '#ffffff',
     },
   },
+  breakpoints: {
+    values: {
+      mobile: 0,
+      tablet: 640,
+      laptop: 1024,
+      desktop: 1200,
+    }
+  }
 });
+
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

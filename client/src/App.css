@@ -18,7 +18,7 @@ form {
 .main-page {
   margin: 20px;
   position: absolute;
-  top: 300%;
+  top: 200%;
   width: 87%;
 }
 
@@ -32,4 +32,6 @@ p {
   font-size: 1rem;
 }
 
-
+#logo_w {
+  max-width: 100%
+}

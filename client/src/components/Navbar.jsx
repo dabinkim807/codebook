@@ -15,7 +15,7 @@ function MyNavBar() {
   const { isAuthenticated } = useAuth0();
 
   return (
-    <AppBar position="static">
+    <AppBar data-testid="navbar" position="static">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <Box sx={{ flexGrow: 0 }}>

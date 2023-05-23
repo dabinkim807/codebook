@@ -13,7 +13,6 @@ import Select from '@mui/material/Select';
 
 
 function Schedule(props) {
-  // currentUser={currentUser} setCurrentUser={setCurrentUser}
   const { user, getAccessTokenSilently } = useAuth0();
 
   const [newSchedule, setNewSchedule] = useState({
@@ -76,7 +75,6 @@ function Schedule(props) {
       }
 
       const token = await getAccessTokenSilently();
-      // const response = await fetch("/api/schedule", {
       const data = {
         cc_category: newSchedule.cc_category,
         cc_rank: newSchedule.cc_rank,
@@ -90,25 +88,7 @@ function Schedule(props) {
           "authorization": `BEARER ${token}`,
           "Content-type": "application/JSON"
         },
-        // body: JSON.stringify({
-        //   cc_category: newSchedule.cc_category,
-        //   cc_rank: newSchedule.cc_rank,
-        //   cc_frequency: newSchedule.cc_frequency,
-        //   cc_day: newSchedule.cc_day,
-        //   e_frequency: newSchedule.e_frequency
-        // })
       });
-      // const data = await response.json();
-      // if (data.errorMessage !== undefined) {
-      //   setErrorMessage(data.errorMessage);
-      //   setShowSuccess(false);
-      //   setShowInfo(false);
-      //   return;
-      // }
-      // if (newSchedule.cc_category !== null) {
-      //   setShowSuccess(true);
-      // }
-      // props.setCurrentUser({...props.currentUser, ...data});
 
       if (response.data.errorMessage !== undefined) {
         setErrorMessage(response.data.errorMessage);

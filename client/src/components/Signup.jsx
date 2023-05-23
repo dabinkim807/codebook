@@ -18,7 +18,6 @@ function Signup(props) {
   const postUser = async () => {
     if (user) {
       const token = await getAccessTokenSilently();
-      // const response = await fetch("/api/user", {
       const data = {username: username};
       const response = await axios.post("/api/user", data, {
         method: "POST",
@@ -26,15 +25,7 @@ function Signup(props) {
           "authorization": `BEARER ${token}`,
           "Content-type": "application/JSON"
         },
-        // body: JSON.stringify({username: username})
       });
-      // const data = await response.json();
-      // if (data.errorMessage !== undefined) {
-      //   setErrorMessage(data.errorMessage);
-      //   setUsername("");
-      //   return;
-      // }
-      // props.setCurrentUser({...props.currentUser, ...data});
 
       if (response.data.errorMessage !== undefined) {
         setErrorMessage(response.data.errorMessage);

@@ -14,19 +14,12 @@ function Validation(props) {
   const getDone = async () => {
     if (user) {
       const token = await getAccessTokenSilently();
-      // const response = await fetch("/api/done", {
       const response = await axios.get("/api/done", {
         method: "GET",
         headers: {
           "authorization": `BEARER ${token}`
         },
       });
-      // const data = await response.json();
-      // if (data.errorMessage !== undefined) {
-      //   setErrorMessage(data.errorMessage);
-      //   return;
-      // }
-      // props.setCurrentUser({...props.currentUser, ...data});
 
       if (response.data.errorMessage !== undefined) {
         setErrorMessage(response.data.errorMessage);

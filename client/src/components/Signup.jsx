@@ -48,7 +48,7 @@ function Signup(props) {
   };
 
   return (
-    <div className="Signup">
+    <div data-testid="signup" className="Signup">
       <Typography style={{fontWeight: 'bold', fontSize: "2.1rem", marginBottom: "25px"}} gutterBottom>Sign Up</Typography>
       <p>If you don't have a Codewars account, click <a href="https://www.codewars.com/" target="_blank">here</a> to sign up!</p>
       <p>Please enter your Codewars username below.</p>

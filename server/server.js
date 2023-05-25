@@ -249,6 +249,25 @@ app.post('/api/user', jwtCheck, async (req, res) => {
     }
     const auth_data = auth_response.data;
 
+    // **** for demo **** //
+    // if DEMO_TEST_CHALLENGE env variable is not empty, post pre-selected demo test_challenge to db
+    if (process.env.DEMO_TEST_CHALLENGE !== "") {
+      await db.query(
+        `
+        INSERT INTO users (user_id, username, email, test_challenge, test_created, name) 
+        VALUES($1, $2, $3, $4, $5, $6);
+        `,
+        [req.auth.payload.sub, req.body.username, auth_data[0].email, process.env.DEMO_TEST_CHALLENGE, time_now, auth_data[0].name]);
+  
+      return res.status(200).json({
+        test_challenge: process.env.DEMO_TEST_CHALLENGE,
+        test_created: time_now,
+        validated: false,
+        idExists: true
+      });
+    }
+    // ******** //
+
     const { rows: questions } = await db.query("SELECT challenge FROM code_challenges WHERE rank = 'Beginner'");
 
     let question_ids = questions.map(q => q.challenge);

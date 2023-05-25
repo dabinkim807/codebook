@@ -1,5 +1,7 @@
 .App {
   background-color: white;
+  margin: auto;
+  align-items: center;
   position: relative;
 }
 
@@ -19,14 +21,13 @@ form {
 }
 
 .main-page {
-  margin: 20px;
+  margin: auto;
   position: absolute;
-  top: 150%;
-  width: 87%;
+  top: 300%;
+  width: 100%;
 }
 
 .landing {
-  margin: auto;
   text-align: center;
 }
 

@@ -13,7 +13,7 @@ function Landing() {
           alt="CodeBook logo white bg"
         />
       </div>
-      <Typography style={{fontSize: "1.5rem", marginBottom: "10px"}}><b>Keep yourself accountable.</b></Typography>
+      <Typography style={{fontSize: "1.8rem", letterSpacing: "0.09em", marginBottom: "0.4em"}}><b>Keep yourself accountable.</b></Typography>
       <p>Schedule your code challenge today!</p>
       <SignupButton />
     </div>

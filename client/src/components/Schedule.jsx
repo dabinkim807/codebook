@@ -104,7 +104,7 @@ function Schedule(props) {
   };
 
   return (
-    <div className="schedule">
+    <div data-testid="schedule" className="schedule">
       <Typography style={{fontWeight: 'bold', fontSize: "2.1rem", marginBottom: "15px"}} gutterBottom>Schedule</Typography>
      
       <form>

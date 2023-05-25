@@ -1,4 +1,4 @@
-import SignupButton from './SignupButton';
+import SignupButton from '../components/auth0/SignupButton';
 import {expect, test} from 'vitest';
 import {render, screen} from '@testing-library/react';
 

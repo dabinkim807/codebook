@@ -1,4 +1,4 @@
-import Schedule from './Schedule';
+import Schedule from '../components/Schedule';
 import {expect, test} from 'vitest';
 import {render, screen} from '@testing-library/react';
 

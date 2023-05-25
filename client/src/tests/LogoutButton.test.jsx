@@ -1,4 +1,4 @@
-import LogoutButton from './LogoutButton';
+import LogoutButton from '../components/auth0/LogoutButton';
 import {expect, test} from 'vitest';
 import {render, screen} from '@testing-library/react';
 

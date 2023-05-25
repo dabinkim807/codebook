@@ -75,6 +75,9 @@ app.get('/api/user', jwtCheck, async (req, res) => {
     // if user is in db but is not validated, test_challenge has already been assigned
     // call CW API, check test_challenge is fully passed (completed within time limit)
     const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
+    if (cw_response.error) {
+      return res.status(400).json({ errorMessage: `${cw_response.message}` });
+    }
     const cw_data = cw_response.data;
 
     for (const challenge of cw_data.data) {
@@ -155,6 +158,9 @@ app.get('/api/done', jwtCheck, async (req, res) => {
 
     // stretch goal: to handle multiple pages of results, create a function that calls API for length of pages
     const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
+    if (cw_response.error) {
+      return res.status(400).json({ errorMessage: `${cw_response.message}` });
+    }
     const cw_data = cw_response.data;
 
     for (const challenge of cw_data.data) {
@@ -214,6 +220,9 @@ app.post('/api/user', jwtCheck, async (req, res) => {
 
     // call Codewars List of CC API
     const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${req.body.username}/code-challenges/completed`);
+    if (cw_response.error) {
+      return res.status(400).json({ errorMessage: `${cw_response.message}` });
+    }
     const cw_data = cw_response.data;
 
     // if username does not exist in Codewars API, cw_data.success === false
@@ -235,7 +244,6 @@ app.post('/api/user', jwtCheck, async (req, res) => {
         "authorization": `BEARER ${token}`
       }
     });
-
     if (auth_response.error) {
       return res.status(400).json({ errorMessage: `${auth_response.message}` });
     }
@@ -334,6 +342,9 @@ cron.schedule(convertEnv[process.env.INTERVAL_VALIDATION], async function () {
 
  for (const user of users) {
    const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
+   if (cw_response.error) {
+    return res.status(400).json({ errorMessage: `${cw_response.message}` });
+  }
    const cw_data = cw_response.data;
 
     for (const challenge of cw_data.data) {
@@ -392,6 +403,9 @@ const gradeCC = async () => {
 
   for (const user_cc of users_cc_state) {
     const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${user_cc.username}/code-challenges/completed`);
+    if (cw_response.error) {
+      return res.status(400).json({ errorMessage: `${cw_response.message}` });
+    }
     const cw_data = cw_response.data;
     let matched = false;
 
@@ -479,6 +493,9 @@ const sendNewCCEmail = async () => {
 
   for (const user of users) {
     const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
+    if (cw_response.error) {
+      return res.status(400).json({ errorMessage: `${cw_response.message}` });
+    }
     const cw_data = cw_response.data;
 
     // if cc_day === current day of the week, randomly assign users a cc from db that matches their preferences

@@ -11,7 +11,7 @@ function LogoutButton() {
         onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })} 
         variant="contained"
         color="secondary"
-        size="small"
+        size="medium"
       >
       Logout
       </Button>

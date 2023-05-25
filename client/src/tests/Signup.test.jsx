@@ -1,9 +1,9 @@
-import SignupButton from './SignupButton';
+import Signup from '../components/Signup';
 import {expect, test} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
-test('SignupButton renders correctly', () => {
-  const { getByTestId } = render(<SignupButton />);
+test('Signup renders correctly', () => {
+  const { getByTestId } = render(<Signup />);
   const signupElement = getByTestId('signup');
   expect(signupElement).toBeDefined();
 });

@@ -1,5 +1,7 @@
 .App {
   background-color: white;
+  margin: auto;
+  align-items: center;
   position: relative;
 }
 
@@ -7,8 +9,8 @@ form {
   flex-direction: column;
   align-items: center;
   text-align: left;
-  margin-top: 2em;
-  margin-bottom: 6em;
+  margin-top: 1em;
+  margin-bottom: 15em;
   flex: 1;
 }
 
@@ -19,14 +21,13 @@ form {
 }
 
 .main-page {
-  margin: 20px;
+  margin: auto;
   position: absolute;
-  top: 150%;
-  width: 87%;
+  top: 300%;
+  width: 100%;
 }
 
 .landing {
-  margin: auto;
   text-align: center;
 }
 
@@ -42,12 +43,33 @@ label {
   margin-right: 12px;
 }
 
-.schedule {
-  margin-left: 0.5em; 
+.signup {
+  margin: auto;
+  width: 50%;
+  line-height: 2em;
 }
 
-#button_schedule, #submit {
-  margin-top: 30px;
+#submit {
+  margin-top: 3em;
+}
+
+.validation {
+  margin: auto;
+  width: 50%;
+  line-height: 2em;
+}
+
+.schedule {
+  margin: auto;
+  width: 50%;
+}
+
+#button_schedule {
+  margin-top: 5em;
+}
+
+#button_schedule {
+  margin-left: 3.2em;
 }
 
 #button-container {
@@ -59,7 +81,7 @@ label {
 
 #submit, #done {
   display: block;
-  margin-left: 11px;
+  margin-left: 4em;
 }
 
 #username {

@@ -12,7 +12,7 @@ function LoginButton() {
         onClick={() => loginWithRedirect()} 
         variant="contained" 
         color="secondary"
-        size="small"
+        size="medium"
       >
       Login
       </Button>

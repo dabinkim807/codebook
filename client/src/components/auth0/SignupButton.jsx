@@ -12,6 +12,7 @@ function SignupButton() {
       variant="contained" 
       color="primary"
       style={{marginTop: "10px"}}
+      size="large"
     >
     Sign Up
     </Button>

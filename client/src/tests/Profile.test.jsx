@@ -1,4 +1,4 @@
-import Profile from './Profile';
+import Profile from '../components/auth0/Profile';
 import {expect, test} from 'vitest';
 import {render, screen} from '@testing-library/react';
 

@@ -104,11 +104,11 @@ function Schedule(props) {
   };
 
   return (
-    <div className="schedule">
-      <Typography style={{fontWeight: 'bold', fontSize: "2.1rem", marginBottom: "15px"}} gutterBottom>Schedule</Typography>
+    <div data-testid="schedule" className="schedule">
+      <Typography style={{fontWeight: 'bold', fontSize: "3rem", marginBottom: "1.3em"}} gutterBottom>Schedule</Typography>
      
       <form>
-        <Typography style={{fontWeight: 'bold', fontSize: "1.2rem", marginBottom: "20px"}} gutterBottom>Challenge Preferences</Typography>
+        <Typography style={{fontWeight: 'bold', fontSize: "1.2rem", marginBottom: "1.6em"}} gutterBottom>Challenge Preferences</Typography>
 
         <Box sx={{ minWidth: 100 }}>
           <FormControl fullWidth>
@@ -186,7 +186,7 @@ function Schedule(props) {
         <br></br>
         <br></br>
         
-        <Typography style={{fontWeight: 'bold', fontSize: "1.2rem", marginBottom: "20px"}} gutterBottom>Email Preferences</Typography>
+        <Typography style={{fontWeight: 'bold', fontSize: "1.2rem", marginBottom: "1.6em"}} gutterBottom>Email Preferences</Typography>
 
         <Box sx={{ minWidth: 100 }}>
           <FormControl fullWidth>
@@ -210,16 +210,18 @@ function Schedule(props) {
         {showSuccess ? <Alert severity="success">Code challenge scheduled! Look out for the email</Alert> : <></>}
         {showInfo ? <Alert severity="info">Schedule has been cleared</Alert> : <></>}
 
-        <Button 
-          id="button_schedule"
-          type="submit"
-          onClick={handleSchedule}
-          variant="contained" 
-          color="primary"
-          size="medium"
-        >
-        Schedule
-        </Button>
+        <div id="button-container">
+          <Button 
+            id="button_schedule"
+            type="submit"
+            onClick={handleSchedule}
+            variant="contained" 
+            color="primary"
+            size="large"
+          >
+          Schedule
+          </Button>
+        </div>
               
       </form>
 

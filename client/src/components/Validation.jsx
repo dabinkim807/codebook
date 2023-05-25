@@ -35,9 +35,9 @@ function Validation(props) {
   };
 
   return (
-    <div className="Validation">
-      <Typography style={{fontWeight: 'bold', fontSize: "2.1rem", marginBottom: "25px"}} gutterBottom>Validation</Typography>
-      <p>Thank you for signing up, {user.given_name}!</p>       
+    <div className="validation">
+      <Typography style={{fontWeight: 'bold', fontSize: "3rem", marginBottom: "1.3em"}} gutterBottom>Validation</Typography>
+      <Typography style={{fontWeight: 'bold', fontSize: "1.3rem", marginBottom: "2em"}} gutterBottom>Thank you for signing up, {user.given_name}!</Typography>
       <p>To confirm your account, please complete <a href={"https://www.codewars.com/kata/" + props.currentUser.test_challenge} target="_blank">this Codewars challenge</a> within <b><u>10 minutes</u></b>.</p>
       <p>Click on the "DONE" button once you've passed the challenge!</p>
 
@@ -52,7 +52,7 @@ function Validation(props) {
           onClick={handleDone}
           variant="contained" 
           color="primary"
-          size="medium"
+          size="large"
         >
         Done
         </Button>

@@ -9,7 +9,7 @@ form {
   flex-direction: column;
   align-items: center;
   text-align: left;
-  margin-top: 4em;
+  margin-top: 1em;
   margin-bottom: 15em;
   flex: 1;
 }
@@ -43,13 +43,33 @@ label {
   margin-right: 12px;
 }
 
+.signup {
+  margin: auto;
+  width: 50%;
+  line-height: 2em;
+}
+
+#submit {
+  margin-top: 3em;
+}
+
+.validation {
+  margin: auto;
+  width: 50%;
+  line-height: 2em;
+}
+
 .schedule {
   margin: auto;
   width: 50%;
 }
 
-#button_schedule, #submit {
-  margin-top: 40px;
+#button_schedule {
+  margin-top: 5em;
+}
+
+#button_schedule {
+  margin-left: 3.2em;
 }
 
 #button-container {
@@ -61,7 +81,7 @@ label {
 
 #submit, #done {
   display: block;
-  margin-left: 11px;
+  margin-left: 4em;
 }
 
 #username {

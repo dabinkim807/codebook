@@ -136,7 +136,6 @@ app.get('/api/user', jwtCheck, async (req, res) => {
 app.get('/api/done', jwtCheck, async (req, res) => {
   try {
     const { rows: users } = await db.query("SELECT * FROM users WHERE user_id = $1", [req.auth.payload.sub]);
-    console.log(users)
 
     // if user tries to run Done route without going through sign up process (i.e. runs request through Postman), user does not exist in db
     if (users.length !== 1) {
@@ -325,52 +324,52 @@ const convertEnv = {
   'every1min': "* * * * *"
 }
 
-// // scheduled job that validates users every 10 min
-// cron.schedule(convertEnv[process.env.INTERVAL_VALIDATION], async function () {
-//   console.log("---------------------");
-//   console.log("running a task every 10 min");
+// scheduled job that validates users every 10 min
+cron.schedule(convertEnv[process.env.INTERVAL_VALIDATION], async function () {
+  console.log("---------------------");
+  console.log("running a task every 10 min");
 
-//   // check all users from users table who aren't validated yet
-//   const { rows: users } = await db.query("SELECT * FROM users WHERE validated = false");
+  // check all users from users table who aren't validated yet
+  const { rows: users } = await db.query("SELECT * FROM users WHERE validated = false");
 
-//  for (const user of users) {
-//    const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
-//    const cw_data = cw_response.data;
+ for (const user of users) {
+   const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
+   const cw_data = cw_response.data;
 
-//     for (const challenge of cw_data.data) {
-//       // if user has completed assigned test_challenge,
-//       if (user.test_challenge === challenge.id) {
-//         // if 10 min have not passed since test_created, set user to validated === true, show user Scheduling Page when they next log in
-//         if (Date.parse(challenge.completedAt) - user.test_created <= 600000) {
-//           await db.query("UPDATE users SET validated = true WHERE user_id = $1", [user.user_id]);
-//           return;
-//         // otherwise, if 10 min have passed, delete user from db, show user Sign Up component
-//         } else {
-//           await db.query("DELETE FROM users WHERE user_id = $1", [user.user_id]);
-//           return;
-//         }
-//       } 
-//     }
-//     // otherwise, if the user has not completed test challenge,
-//     // if 10 min have passed, delete user from db, show user Sign Up component
-//     if (Date.now() - user.test_created > 600000) {
-//       await db.query("DELETE FROM users WHERE user_id = $1", [user.user_id]);
-//       return;
-//     } 
-//     // if 10 min haven't passed yet since test_created, do nothing / show user Validation Page
-//   }
-// });
+    for (const challenge of cw_data.data) {
+      // if user has completed assigned test_challenge,
+      if (user.test_challenge === challenge.id) {
+        // if 10 min have not passed since test_created, set user to validated === true, show user Scheduling Page when they next log in
+        if (Date.parse(challenge.completedAt) - user.test_created <= 600000) {
+          await db.query("UPDATE users SET validated = true WHERE user_id = $1", [user.user_id]);
+          return;
+        // otherwise, if 10 min have passed, delete user from db, show user Sign Up component
+        } else {
+          await db.query("DELETE FROM users WHERE user_id = $1", [user.user_id]);
+          return;
+        }
+      } 
+    }
+    // otherwise, if the user has not completed test challenge,
+    // if 10 min have passed, delete user from db, show user Sign Up component
+    if (Date.now() - user.test_created > 600000) {
+      await db.query("DELETE FROM users WHERE user_id = $1", [user.user_id]);
+      return;
+    } 
+    // if 10 min haven't passed yet since test_created, do nothing / show user Validation Page
+  }
+});
 
 
-// // scheduled job that sends automated emails every 24 hrs
-// cron.schedule(convertEnv[process.env.INTERVAL_EMAIL], async function () {
-//   console.log("---------------------");
-//   console.log("running a task every 24 hrs");
+// scheduled job that sends automated emails every 24 hrs
+cron.schedule(convertEnv[process.env.INTERVAL_EMAIL], async function () {
+  console.log("---------------------");
+  console.log("running a task every 24 hrs");
 
-//   gradeCC();
-//   sendNewCCEmail();
-//   sendReminderEmail();
-// });
+  gradeCC();
+  sendNewCCEmail();
+  sendReminderEmail();
+});
 
 
 const gradeCC = async () => {

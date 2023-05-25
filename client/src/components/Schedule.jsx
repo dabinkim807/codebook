@@ -105,10 +105,10 @@ function Schedule(props) {
 
   return (
     <div data-testid="schedule" className="schedule">
-      <Typography style={{fontWeight: 'bold', fontSize: "2.1rem", marginBottom: "15px"}} gutterBottom>Schedule</Typography>
+      <Typography style={{fontWeight: 'bold', fontSize: "3rem", marginBottom: "15px"}} gutterBottom>Schedule</Typography>
      
       <form>
-        <Typography style={{fontWeight: 'bold', fontSize: "1.2rem", marginBottom: "20px"}} gutterBottom>Challenge Preferences</Typography>
+        <Typography style={{fontWeight: 'bold', fontSize: "1.2rem", marginBottom: "25px"}} gutterBottom>Challenge Preferences</Typography>
 
         <Box sx={{ minWidth: 100 }}>
           <FormControl fullWidth>
@@ -186,7 +186,7 @@ function Schedule(props) {
         <br></br>
         <br></br>
         
-        <Typography style={{fontWeight: 'bold', fontSize: "1.2rem", marginBottom: "20px"}} gutterBottom>Email Preferences</Typography>
+        <Typography style={{fontWeight: 'bold', fontSize: "1.2rem", marginBottom: "25px"}} gutterBottom>Email Preferences</Typography>
 
         <Box sx={{ minWidth: 100 }}>
           <FormControl fullWidth>
@@ -216,7 +216,7 @@ function Schedule(props) {
           onClick={handleSchedule}
           variant="contained" 
           color="primary"
-          size="medium"
+          size="large"
         >
         Schedule
         </Button>

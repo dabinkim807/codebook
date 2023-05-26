@@ -75,8 +75,8 @@ app.get('/api/user', jwtCheck, async (req, res) => {
     // if user is in db but is not validated, test_challenge has already been assigned
     // call CW API, check test_challenge is fully passed (completed within time limit)
     const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
-    if (cw_response.error) {
-      return res.status(400).json({ errorMessage: `${cw_response.message}` });
+    if (cw_response.success === false) {
+      return res.status(400).json({ errorMessage: `${cw_response.reason}` });
     }
     const cw_data = cw_response.data;
 
@@ -158,8 +158,8 @@ app.get('/api/done', jwtCheck, async (req, res) => {
 
     // stretch goal: to handle multiple pages of results, create a function that calls API for length of pages
     const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${users[0].username}/code-challenges/completed`);
-    if (cw_response.error) {
-      return res.status(400).json({ errorMessage: `${cw_response.message}` });
+    if (cw_response.success === false) {
+      return res.status(400).json({ errorMessage: `${cw_response.reason}` });
     }
     const cw_data = cw_response.data;
 
@@ -220,8 +220,8 @@ app.post('/api/user', jwtCheck, async (req, res) => {
 
     // call Codewars List of CC API
     const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${req.body.username}/code-challenges/completed`);
-    if (cw_response.error) {
-      return res.status(400).json({ errorMessage: `${cw_response.message}` });
+    if (cw_response.success === false) {
+      return res.status(400).json({ errorMessage: `${cw_response.reason}` });
     }
     const cw_data = cw_response.data;
 
@@ -252,12 +252,14 @@ app.post('/api/user', jwtCheck, async (req, res) => {
     // **** for demo **** //
     // if DEMO_TEST_CHALLENGE env variable is not empty, post pre-selected demo test_challenge to db
     if (process.env.DEMO_TEST_CHALLENGE !== "") {
+      let time_now = new Date();
       await db.query(
         `
         INSERT INTO users (user_id, username, email, test_challenge, test_created, name) 
         VALUES($1, $2, $3, $4, $5, $6);
         `,
-        [req.auth.payload.sub, req.body.username, auth_data[0].email, process.env.DEMO_TEST_CHALLENGE, time_now, auth_data[0].name]);
+        [req.auth.payload.sub, req.body.username, auth_data[0].email, process.env.DEMO_TEST_CHALLENGE, time_now, auth_data[0].name]
+      );
   
       return res.status(200).json({
         test_challenge: process.env.DEMO_TEST_CHALLENGE,
@@ -265,7 +267,7 @@ app.post('/api/user', jwtCheck, async (req, res) => {
         validated: false,
         idExists: true
       });
-    }
+    } 
     // ******** //
 
     const { rows: questions } = await db.query("SELECT challenge FROM code_challenges WHERE rank = 'Beginner'");
@@ -359,12 +361,12 @@ cron.schedule(convertEnv[process.env.INTERVAL_VALIDATION], async function () {
   // check all users from users table who aren't validated yet
   const { rows: users } = await db.query("SELECT * FROM users WHERE validated = false");
 
- for (const user of users) {
-   const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
-   if (cw_response.error) {
-    return res.status(400).json({ errorMessage: `${cw_response.message}` });
-  }
-   const cw_data = cw_response.data;
+  for (const user of users) {
+    const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
+    if (cw_response.success === false) {
+      return res.status(400).json({ errorMessage: `${cw_response.reason}` });
+    }
+    const cw_data = cw_response.data;
 
     for (const challenge of cw_data.data) {
       // if user has completed assigned test_challenge,
@@ -422,8 +424,8 @@ const gradeCC = async () => {
 
   for (const user_cc of users_cc_state) {
     const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${user_cc.username}/code-challenges/completed`);
-    if (cw_response.error) {
-      return res.status(400).json({ errorMessage: `${cw_response.message}` });
+    if (cw_response.success === false) {
+      return res.status(400).json({ errorMessage: `${cw_response.reason}` });
     }
     const cw_data = cw_response.data;
     let matched = false;
@@ -512,8 +514,8 @@ const sendNewCCEmail = async () => {
 
   for (const user of users) {
     const cw_response = await axios.get(`https://www.codewars.com/api/v1/users/${user.username}/code-challenges/completed`);
-    if (cw_response.error) {
-      return res.status(400).json({ errorMessage: `${cw_response.message}` });
+    if (cw_response.success === false) {
+      return res.status(400).json({ errorMessage: `${cw_response.reason}` });
     }
     const cw_data = cw_response.data;
 

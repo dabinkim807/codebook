@@ -86,17 +86,17 @@ Note: Client server will be running on http://localhost:5173 and server will be 
 <br></br>
 4. The backend will first validate the submitted username against existing users in the users table. If the user does not exist in the database, the backend will then validate the user against existing users in Codewars by calling the Codewars API and fetching user data.
 <br></br>
-5. Codewars provides a Users API and Code Challenges API. To get user data and a list of a user's total completed code challenges, a username will be passed as parameter in the HTTP request. To get all code challenge data, a code challenge ID will be passed as parameter in the HTTP request.
+5. Codewars provides List of Code Challenges API. To get a list of a user's total completed code challenges, a username will be passed as parameter in the HTTP request.
 <br></br>
-6. Once the user has submitted their Codewars username, the app will make a call to Codewars' Users API to access the user's total completed code challenges.
+6. Once the user has submitted their Codewars username, the app will make a call to the Codewars API to access the user's total completed code challenges.
 <br></br>
-7. The app will select a random, beginner-level, hard-coded code challenge from the database and check that the code challenge ID does not exist in the user's total completed code challenges.
+7. The app will select a random, beginner-level, hard-coded code challenge from the database and check that the code challenge ID does not exist in the user's total completed challenges.
 <br></br>
 8. The validation page will then prompt the user to complete the challenge via an external link to Codewars. The purpose of this test is to validate that the user is truly the rightful owner of the Codewars username they have submitted.
 <br></br>
-9. To limit the possibility of the user cheating (getting the true owner of the Codewars account to solve the problem for them), a time limit of 10 minutes will be enforced from the moment the user clicks on the submit button.
+9. To limit the possibility of a malicious user claiming someone else's Codewars username, a time limit of 10 minutes will be enforced from the moment the user clicks on the submit button.
 <br></br>
-10. Once the time limit has passed, the backend will call the Users API again to verify whether the user's list of total completed challenges has been updated to include the test.
+10. Once the time limit has passed, the backend will call the Codewars API again to verify whether the user's list of total completed challenges has been updated to include the test.
 <br></br>
 11. If the user's list of total completed challenges is updated successfully, the user is most likely valid. The user will be marked as validated and will then be able to access the app's scheduling page.
 <br></br>
@@ -106,12 +106,12 @@ Note: Client server will be running on http://localhost:5173 and server will be 
     <br></br>
     2. Users can make an unlimited amount of sign-up attempts.
     <br></br>
-    3. A scheduled job will periodically delete any users who are not validated and who have exceeded the 10-minute deadline to complete the test
+    3. A scheduled job will periodically delete any users who are not validated and who have exceeded the 10-minute deadline to complete the test.
 
 <br></br>
 
 ### Scheduling Code Challenges
-1. On the scheduling page, the user will be able to choose the difficulty level and topic of their code challenges and how frequently they will be received (e.g. one code challenge per week for 1 month).
+1. On the scheduling page, the user will be able to choose the difficulty level and topic of their code challenges and how frequently they will be received (e.g. one code challenge per week, every Sunday).
 <br></br>
 2. The user will also be able to opt into receiving reminder emails to solve their code challenges, and if so, how often they would like to be reminded.
 <br></br>
@@ -177,9 +177,6 @@ So why was Codewars chosen instead?
 * Choose code challenge category, difficulty, and frequency
 * Choose whether you want to receive reminder emails, and how often
 
-
-## Status
-Currently in development.
 
 
 <p align="right">(<a href="#introduction">back to top</a>)</p>

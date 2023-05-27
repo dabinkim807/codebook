@@ -13,6 +13,7 @@ DISCLAIMERS:
 
 ## Table of Contents
 * [Introduction](#introduction)
+* [Demo](#demo)
 * [Installation](#installation)
 * [Architecture](#architecture)
 * [User Flow](#user-flow)
@@ -34,6 +35,11 @@ Users will sign-up through Auth0 and provide their Codewars username to the app.
 Once a user has been validated, they can choose their code challenge and email preferences. According to the user's preferences, the app will send the user automated emails containing links to code challenges and/or reminders to complete their challenges.
 
 This app does not provide an environment in which users can solve coding challenges.
+
+
+## Demo
+https://github.com/dabinkim807/codebook/assets/113155586/fa9d0c09-9fed-41fb-b0d4-fc3256bd54bf
+
 
 
 ## Installation

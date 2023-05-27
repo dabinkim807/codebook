@@ -79,7 +79,7 @@ Note: Client server will be running on http://localhost:5173 and server will be 
 
 
 ## Architecture
-<!-- <p align="center"><img src="client/src/assets/architecture.png" alt="Architecture" width="900" /></p> -->
+<p align="center"><img src="client/src/assets/architecture.png" alt="Architecture" width="900" /></p>
 
 
 ## User Flow

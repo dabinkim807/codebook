@@ -6,10 +6,15 @@
 
 Project is live on [Render](https://server-zqle.onrender.com/)!
 <br></br>
+DISCLAIMERS: 
+ * A Google account is required to sign up via Auth0
+ * To unsubscribe from emails, set every field in your schedule to "None"
+<br></br>
 
 ## Table of Contents
 * [Introduction](#introduction)
 * [Installation](#installation)
+* [Architecture](#architecture)
 * [User Flow](#user-flow)
 * [Database Schema](#database-schema)
 * [System Design](#system-design)
@@ -18,7 +23,7 @@ Project is live on [Render](https://server-zqle.onrender.com/)!
 * [Alternatives](#alternatives)
 * [Technologies](#technologies)
 * [Features](#features)
-* [Status](#status)
+* [About the Developer](#about-the-developer)
 
 
 ## Introduction
@@ -55,7 +60,7 @@ Step 4: Connect the database and the data.
 
 ```
   cd server
-  psql codebook -f db.sql
+  psql -f db.sql
 ```
 
 Step 5: Start the program!
@@ -65,6 +70,10 @@ Step 5: Start the program!
 ```
 
 Note: Client server will be running on http://localhost:5173 and server will be running on http://localhost:8080.
+
+
+## Architecture
+<!-- <p align="center"><img src="client/src/assets/architecture.png" alt="Architecture" width="650" /></p> -->
 
 
 ## User Flow
@@ -130,7 +139,11 @@ Note: Client server will be running on http://localhost:5173 and server will be 
 ## Screenshots
 <p align="center"><img src="client/src/assets/landing.png" alt="User flow" width="900" /></p>
 <br></br>
-<p align="center"><img src="client/src/assets/schedule.png" alt="User flow" width="900" /></p>
+<p align="center"><img src="client/src/assets/signup.png" alt="Sign up" width="900" /></p>
+<br></br>
+<p align="center"><img src="client/src/assets/validation.png" alt="Validation" width="900" /></p>
+<br></br>
+<p align="center"><img src="client/src/assets/schedule.png" alt="Schedule" width="900" /></p>
 
 <br></br>
 
@@ -176,6 +189,12 @@ So why was Codewars chosen instead?
 ## Features
 * Choose code challenge category, difficulty, and frequency
 * Choose whether you want to receive reminder emails, and how often
+
+
+## About the Developer
+Dana is a former Accounts Receivable Claims Analyst who became interested in software engineering through looking into streamlining data for her previous job. She is interested in the backend and solving interesting problems that end users care about.
+
+Connect with me on [LinkedIn](https://www.linkedin.com/in/danadabinkim/)!
 
 
 

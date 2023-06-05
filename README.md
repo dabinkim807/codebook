@@ -66,7 +66,7 @@ Step 4: Connect the database and the data.
 
 ```
   cd server
-  psql -f db.sql
+  psql codebook -f db.sql
 ```
 
 Step 5: Start the program!

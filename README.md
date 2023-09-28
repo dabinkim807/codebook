@@ -4,7 +4,7 @@
 </h1>
 
 
-Project is live on [Render](https://server-zqle.onrender.com/)!
+9/28/23 Update: Project no longer live on [Render](https://server-zqle.onrender.com/) due to subscription limit.
 <br></br>
 DISCLAIMERS: 
  * A Google account is required to sign up via Auth0
@@ -35,6 +35,8 @@ Users will sign-up through Auth0 and provide their Codewars username to the app.
 Once a user has been validated, they can choose their code challenge and email preferences. According to the user's preferences, the app will send the user automated emails containing links to code challenges and/or reminders to complete their challenges.
 
 This app does not provide an environment in which users can solve coding challenges.
+
+This project implemented a design doc, which was reviewed by several senior and staff engineers: [CodeBook Design Doc](https://docs.google.com/document/d/1HQIzgi81sngaJMvH1Z2m0ty-5p6XkTQd5ZT9kRqDKow/edit#heading=h.samv6pmvjo3i)
 
 
 ## Demo
